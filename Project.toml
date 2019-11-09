@@ -1,0 +1,19 @@
+name = "JLBoost"
+uuid = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
+authors = ["evalparse <zhuojia.dai@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
