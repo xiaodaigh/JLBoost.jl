@@ -1,4 +1,4 @@
-# JLBoost
+# JLBoost.jl
 
 I am trying to implement the algorithms in the original `xgboost` paper. I want to implement the algorithms mentioned in LigthGBM and Catboost and to port them to GPUs.
 
