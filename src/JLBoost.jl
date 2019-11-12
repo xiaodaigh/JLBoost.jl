@@ -9,7 +9,7 @@ using Base.Iterators: drop
 #using RCall
 
 export JLBoostTreeNode, JLBoostTree, showlah
-export xgboost, best_split, _best_split
+export xgboost, best_split, _best_split, scoretree
 
 include("JLBoostTree.jl")
 
@@ -96,6 +96,8 @@ Find the best (binary) split point by loss_fn(feature, target) given a sorted it
 of feature
 """
 function best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Number, verbose = false)
+	@assert length(feature) == length(target)
+	@assert length(feature) == length(prev_w)
     if issorted(feature)
         res = _best_split(loss_fn, feature, target, prev_w, lambda, gamma, verbose)
     else
@@ -140,7 +142,7 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
     ch = cumsum(h.(loss_fn, target, prev_w))
 
     max_cg = cg[end]
-    max_ch = ch[end]
+    max_ch = ch[end]    
 
     last_feature = feature[1]
     cutpt::Int = zero(Int)
@@ -152,8 +154,8 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
     	no_split = max_cg^2 /(max_ch + lambda)
     	gain = no_split - gamma
     	cutpt = 1
-    	lweight = no_split
-    	rweight = no_split
+    	lweight = -cg[cutpt]/(ch[cutpt]+lambda)
+    	rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
 	else
 		for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
 			if f != last_feature
@@ -161,13 +163,11 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
 				right_split = (max_cg-cg)^(2) / ((max_ch - ch) + lambda)
 				no_split = max_cg^2 /(max_ch + lambda)
 				gain = left_split +  right_split - no_split - gamma
-				if gain > best_gain
-					# println(i)
-					# println(best_gain)
+				if gain > best_gain				
 					best_gain = gain
 					cutpt = i
-					lweight = left_split
-					rweight = right_split
+					lweight = -cg/(ch+lambda)
+					rweight = -(max_cg - cg)/(max_ch - ch + lambda)
 				end
 				last_feature = f    		
 			end
@@ -178,7 +178,7 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
     if cutpt >= 1
     	split_at = feature[cutpt]
     end
-    
+
     (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
 end
 
@@ -207,9 +207,7 @@ function xgboost(df, target, features, jlt::JLBoostTreeNode; prev_w = :prev_w, e
     if split_with_best_gain.gain > 0
         # set the parent tree node
         jlt.split = split_with_best_gain.split_at
-        jlt.splitfeature = split_with_best_gain.feature
-        println(maxdepth)
-        println(jlt.splitfeature)
+        jlt.splitfeature = split_with_best_gain.feature      
 
         left_treenode = JLBoostTreeNode(split_with_best_gain.lweight)        
         right_treenode = JLBoostTreeNode(split_with_best_gain.rweight)
@@ -220,8 +218,6 @@ function xgboost(df, target, features, jlt::JLBoostTreeNode; prev_w = :prev_w, e
             df_right = df[df[!, split_with_best_gain.feature] .> split_with_best_gain.split_at,:]
 
             left_treenode  = xgboost(df_left,  target, features, left_treenode;  prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
-            println("ok")
-            println(nrow(df_right))
             right_treenode = xgboost(df_right, target, features, right_treenode; prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
         end
         jlt.children = [left_treenode, right_treenode]
