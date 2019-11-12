@@ -1,22 +1,36 @@
 module JLBoost
 
-using DataFrames,StatsBase
-using Zygote:gradient, hessian
+using DataFrames
+using SortingLab
+#using StatsBase
+#using Zygote:gradient, hessian
+using ForwardDiff:gradient, hessian
+using Base.Iterators: drop
 #using RCall
 
 export JLBoostTreeNode, JLBoostTree, showlah
-export xgboost
+export xgboost, best_split, _best_split
 
 include("JLBoostTree.jl")
 
+using ..JLBoostTrees: JLBoostTreeNode
+
+# using CuArrays
+# using Flux: logitbinarycrossentropy
+
 t2one(x) = x ? 1 : 0
+
 # set up loss functions
+
+# alternate definition
 softmax(w) = 1/(1 + exp(-w))
 logloss(w, y) = -(y*log(softmax(w)) + (1-y)*log(1-softmax(w)))
 
-#
+# The Flux implemnetation
+# logloss = logitbinarycrossentropy
+
 g(loss_fn, y, prev_w) = begin
-    gres = gradient(x->loss_fn(x, y), prev_w)
+    gres = gradient(x->loss_fn(x[1], y), [prev_w])
     gres[1]
 end
 
@@ -42,16 +56,41 @@ end
 # df[prev_w] .+= w
 # (w, unique(df[prev_w])..., softmax(w))
 
-function best_split(loss_fn, df::DataFrame, feature, target, prev_w, lambda, gamma)
-    println(feature)
+function best_split(loss_fn, df::DataFrame, feature, target, prev_w, lambda, gamma; verbose = false)
+    if verbose
+        println("Choosing a split on", feature)
+    end
     df2 = sort(df[!, [target, feature, prev_w]], feature)
 
     x = df2[!, feature];
     target_vec = df2[!, target];
     prev_w_vec = df2[!, prev_w];
 
-    cg = cumsum(g.(loss_fn, target_vec, prev_w_vec))
-    ch = cumsum(h.(loss_fn, target_vec, prev_w_vec))
+    split_res = best_split(loss_fn, x, target_vec, prev_w_vec, lambda, gamma, verbose)
+    (feature = feature, split_res...)
+end
+
+
+
+"""
+    best_split(loss_fn, feature, target, prev_w, lambda, gamma)
+
+Find the best (binary) split point by loss_fn(feature, target) given a sorted iterator
+of feature
+"""
+function best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Number, verbose = false)
+    if issorted(feature)
+        res = _best_split(loss_fn, feature, target, prev_w, lambda, gamma, verbose)
+    else
+        s = fsortperm(feature)
+        res = _best_split(loss_fn, @view(feature[s]), @view(target[s]), @view(prev_w[s]), lambda, gamma, verbose)
+    end    
+end
+
+function _best_split_old(loss_fn, feature::AbstractVector, target::AbstractVector, prev_w::AbstractVector, lambda::Number, gamma::Number, verbose = false)
+    # TODO redo this using iterators
+    cg = cumsum(g.(loss_fn, target, prev_w))
+    ch = cumsum(h.(loss_fn, target, prev_w))
 
     max_cg = cg[end]
     max_ch = ch[end]
@@ -59,39 +98,71 @@ function best_split(loss_fn, df::DataFrame, feature, target, prev_w, lambda, gam
     left_split = (cg).^(2) ./(ch .+ lambda)
     right_split = (max_cg.-cg).^(2) ./ ((max_ch .- ch) .+ lambda)
     no_split = max_cg^2 /(max_ch + lambda)
+
+    # this is the gain if we choose the cut points there
     lrn = left_split .+  right_split .- no_split .- gamma
 
-    df2[!,:lrn] = lrn
-    df2[!,:rn] = 1:size(df)[1]
+    # TODO there could be dups in feature
 
-    df_summ = df2[by(df2, feature, rows_to_keep = :rn => maximum).rows_to_keep, :]
-    maxloc = findmax(df_summ[!,:lrn])
+    # cutting at the last point is the same as having the whole node and not split
+    cutpt = findmax(@view(lrn[2:end]))[2]
 
-    # (x[maxloc[2]], maxloc)
-    # df2[!,:ok] = x .<= df_summ[maxloc[2],feature]
-    # by(df2, :ok, df1 -> (sum(df1[target]), size(df1)[1]))
-
-    # store the best split for this val
-    cutpt = df_summ[maxloc[2],:rn]
     lweight = -cg[cutpt]/(ch[cutpt]+lambda)
     rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
 
-    (feature = feature, best_split = df_summ[maxloc[2],feature], gain = maxloc[1], lweight=lweight, rweight=rweight)
+    (split_at = feature[cutpt], gain = lrn[cutpt], lweight = lweight, rweight = rweight)
+end
+
+"""
+	_best_split(fn, f, t, p, lambda, gamma, verbose)
+
+Assume that f, t, p are iterable
+"""
+function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Number, verbose = false)
+	cg = cumsum(g.(loss_fn, target, prev_w))
+    ch = cumsum(h.(loss_fn, target, prev_w))
+
+    max_cg = cg[end]
+    max_ch = ch[end]
+
+    last_feature = feature[1]
+    cutpt = zero(Int)
+    lweight = 0.0
+    rweight = 0.0
+    best_gain = typemin(Float64)
+
+    for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[2:end]), @view(ch[2:end])))
+    	if f != last_feature
+    		left_split = cg^2 /(ch + lambda)
+    		right_split = (max_cg-cg)^(2) / ((max_ch - ch) + lambda)
+    		no_split = max_cg^2 /(max_ch + lambda)
+    		gain = left_split +  right_split - no_split - gamma
+    		if gain > best_gain
+    			println(i)
+    			println(best_gain)
+    			best_gain = gain
+    			cutpt = i
+    		end
+    		last_feature = f    		
+    	end
+    end
+    
+    (split_at = feature[cutpt], cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
 end
 
 # The main XGBoost function
 function xgboost(df, target, features; prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, maxdepth = 6, subsample = 1)
     #jlt = JLBoostTrees.JLBoostTree(JLBoostTrees.JLBoostTreeNode(0.0), df, target, features, prev_w, eta, lambda, gamma, maxdepth, subsample)
-    jlt = JLBoostTrees.JLBoostTreeNode(0.0)
+    jlt = JLBoostTreeNode(0.0)
     xgboost(df, target, features, jlt, prev_w = prev_w, eta = eta, lambda =lambda, gamma = gamma, maxdepth = maxdepth, subsample = subsample)
 end
 
-function xgboost(df, target, features, jlt::JLBoostTrees.JLBoostTreeNode; prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, maxdepth = 6, subsample = 1)
+function xgboost(df, target, features, jlt::JLBoostTreeNode; prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, maxdepth = 6, subsample = 1)
     #println(maxdepth)
 
     # initialise the weights to 0 if the column doesn't exist yet
-    if all(prev_w  .!= names(df))
-        df[!, prev_w] = 0.0
+    if !(prev_w  in names(df))
+        df[!, prev_w] .= 0.0
     end
 
     # add the weight of the parent node to the weights
@@ -100,7 +171,9 @@ function xgboost(df, target, features, jlt::JLBoostTrees.JLBoostTreeNode; prev_w
 
     # compute the gain for all splits for all features
     all_splits = [best_split(logloss, df, feature, target, prev_w, lambda, gamma) for feature in features]
-    split_with_best_gain = all_splits[findmax(sortperm(all_splits, by = x -> x.gain))[2]]
+    return all_splits
+    split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]
+
 
     # there needs to be positive gain then apply split to the tree
     if split_with_best_gain.gain > 0
@@ -108,16 +181,16 @@ function xgboost(df, target, features, jlt::JLBoostTrees.JLBoostTreeNode; prev_w
         jlt.split = split_with_best_gain.best_split
         jlt.splitfeature = split_with_best_gain.feature
 
-        left_treenode = JLBoostTrees.JLBoostTreeNode(split_with_best_gain.lweight)
-        right_treenode = JLBoostTrees.JLBoostTreeNode(split_with_best_gain.rweight)
+        left_treenode = JLBoostTreeNode(split_with_best_gain.lweight)
+        right_treenode = JLBoostTreeNode(split_with_best_gain.rweight)
 
         if maxdepth > 1
             # now recursively apply the weights to left branch and right branch
-            df_left = df[df[split_with_best_gain.feature] .<= split_with_best_gain.best_split,:]
-            df_right = df[df[split_with_best_gain.feature] .> split_with_best_gain.best_split,:]
+            df_left = df[df[!, split_with_best_gain.feature] .<= split_with_best_gain.best_split,:]
+            df_right = df[df[!, split_with_best_gain.feature] .> split_with_best_gain.best_split,:]
 
-            left_treenode = xgboost(df_left, target, features, left_treenode; prev_w = prev_w, eta = eta, lambda =lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
-            right_treenode = xgboost(df_right, target, features, right_treenode; prev_w = prev_w, eta = eta, lambda =lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
+            left_treenode  = xgboost(df_left,  target, features, left_treenode;  prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
+            right_treenode = xgboost(df_right, target, features, right_treenode; prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, maxdepth = maxdepth - 1, subsample = subsample)
         end
         jlt.children = [left_treenode, right_treenode]
     end

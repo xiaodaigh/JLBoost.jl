@@ -4,12 +4,13 @@ authors = ["evalparse <zhuojia.dai@gmail.com>"]
 version = "0.1.0"
 
 [deps]
-CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+JDF = "babc3d20-cd49-4f60-a736-a8f9c08892d3"
+SortingLab = "562c1548-17b8-5b69-83cf-d8aebec229f5"
 
 [compat]
+DataFrames = "0.19"
 julia = "1"
 
 [extras]
