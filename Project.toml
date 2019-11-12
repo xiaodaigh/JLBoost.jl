@@ -1,16 +1,23 @@
 name = "JLBoost"
 uuid = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
-authors = ["evalparse <zhuojia.dai@gmail.com>"]
+authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
 version = "0.1.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 JDF = "babc3d20-cd49-4f60-a736-a8f9c08892d3"
+NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
 SortingLab = "562c1548-17b8-5b69-83cf-d8aebec229f5"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 DataFrames = "0.19"
+ForwardDiff = "0.10"
+JDF = "0.2"
+NNlib = "0.6"
+SortingLab = "0.2"
+Zygote = "0.4"
 julia = "1"
 
 [extras]
