@@ -7,10 +7,10 @@ export JLBoostTreeNode, JLBoostTree, show
 
 mutable struct JLBoostTreeNode{T <: AbstractFloat}
     weight::T
-    children::Vector{JLBoostTreeNode}
+    children::Vector{JLBoostTreeNode{T}}
     splitfeature
     split
-    JLBoostTreeNode(w::T) where {T <: AbstractFloat}  = new{T}(w, JLBoostTreeNode[], missing, missing)
+    JLBoostTreeNode(w::T) where {T <: AbstractFloat}  = new{T}(w, JLBoostTreeNode{T}[], missing, missing)
 end
 
 mutable struct JLBoostTree
@@ -26,7 +26,12 @@ mutable struct JLBoostTree
     subsample::Real
 end
 
-function showlah(io, jlt::JLBoostTreeNode, ntabs::I; splitfeature="") where {I <: Integer}
+"""
+	show(io, jlt, ntabs; splitfeature="")
+
+Show a JLBoostTree
+"""
+function show(io, jlt::JLBoostTreeNode, ntabs::I; splitfeature="") where {I <: Integer}
     if ntabs == 0
         tabs = ""
     else ntabs >= 1
@@ -49,13 +54,18 @@ function showlah(io, jlt::JLBoostTreeNode, ntabs::I; splitfeature="") where {I <
     end
 
     if length(jlt.children) == 2
-        showlah(io, jlt.children[1], ntabs + 1; splitfeature = "$(jlt.splitfeature) <= $(jlt.split)")
-        showlah(io, jlt.children[2], ntabs + 1; splitfeature = "$(jlt.splitfeature) > $(jlt.split)")
+        show(io, jlt.children[1], ntabs + 1; splitfeature = "$(jlt.splitfeature) <= $(jlt.split)")
+        show(io, jlt.children[2], ntabs + 1; splitfeature = "$(jlt.splitfeature) > $(jlt.split)")
     end
 end
 
+"""
+	show(io, jlt)
+
+Show a JLBoostTree
+"""
 function show(io::IO, jlt::JLBoostTreeNode)
-    showlah(io, jlt, 0)
+    show(io, jlt, 0)
 end
 
 end # end module
