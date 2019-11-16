@@ -3,3 +3,6 @@
 /dev/
 *.sublime-project
 *.sublime-workspace
+*.model
+*.buffer
+*.txt
