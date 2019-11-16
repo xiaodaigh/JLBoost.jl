@@ -52,13 +52,13 @@ function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector
 		@warn "eta != 1 is not implemented yet"
 	end
 
-	res_jlt = Vector{JLBoostTreeNode}(undef, nrounds)
+	res_jlt = Vector{JLBoostTreeNode{Float64}}(undef, nrounds)
 
 	if subsample == 1
 		new_jlt = fit_tree(objective, df, target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
 	else
 		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-		new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, jlt; verbose = verbose, kwargs...)
+		new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
 	end
 	res_jlt[1] = deepcopy(new_jlt)	
 	push!(warm_start, res_jlt[1])
@@ -71,10 +71,10 @@ function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector
 		# assign the previous weight
 		
 		if subsample == 1
-			new_jlt = fit_tree(objective, df, target, features, new_jlt, warm_start; verbose = verbose, kwargs...)
+			new_jlt = fit_tree(objective, df, target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
 		else
 			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)			
-			new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, new_jlt, warm_start; verbose = verbose, kwargs...)
+			new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
 		end		
 	    res_jlt[nround] = deepcopy(new_jlt)
 	    push!(warm_start, res_jlt[nround])

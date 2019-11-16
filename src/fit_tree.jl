@@ -12,7 +12,7 @@ function fit_tree(objective, df::T, target, features, jlt::JLBoostTreeNode, warm
 	prev_w = predict(warm_start, df)
 
 	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]
-	#return all_splits
+	# return all_splits
 	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]	
 
 
