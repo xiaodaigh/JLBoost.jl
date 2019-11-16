@@ -9,6 +9,7 @@ This is an early WIP.
 * Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
+* Easy to manipulate the tree after fitting
 * "Easy" to deploy
 
 ## Example
@@ -20,12 +21,13 @@ iris = dataset("datasets", "iris")
 
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
 target = :is_setosa
+
 features = setdiff(names(iris), [:Species, :is_setosa, :prev_w])
-iris[!, :prev_w] .= 0.0
+xgtree1 = jlboost(iris, target)
+xgtree2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
-xgtree = jlboost!(iris, target, features; nrounds = 2, maxdepth = 2)
-
-iris.pred = predict(xgtree, iris)
+iris.pred1 = predict(xgtree1, iris)
+iris.pred2 = predict(xgtree2, iris)
 ```
 
 ## Notes

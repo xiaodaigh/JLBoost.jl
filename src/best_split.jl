@@ -78,12 +78,12 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
     	no_split = max_cg^2 /(max_ch + lambda)
     	gain = no_split - gamma
     	cutpt = 0
-    	#lweight = -1.0
-    	#rweight = -1.0
-    	# lweight = -cg[cutpt]/(ch[cutpt]+lambda)
-    	# rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
-    	lweight = typemin(eltype(feature))
-    	rweight = typemin(eltype(feature))
+    	# lweight = -1.0
+    	# rweight = -1.0
+    	lweight = -cg[end]/(ch[end]+lambda)
+    	rweight = -cg[end]/(ch[end]+lambda)
+    	# lweight = typemin(eltype(feature))
+    	# rweight = typemin(eltype(feature))
 	else
 		for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
 			if f != last_feature
@@ -102,7 +102,7 @@ function _best_split(loss_fn, feature, target, prev_w, lambda::Number, gamma::Nu
 		end		
 	end
     
-    split_at = typemin(eltype(feature))
+    split_at = feature[1]
     if cutpt >= 1
     	split_at = feature[cutpt]
     end
