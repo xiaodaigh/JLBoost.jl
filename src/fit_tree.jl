@@ -1,8 +1,8 @@
 export fit_tree
 
-function fit_tree(objective, df::T, target, features, jlt::JLBoostTreeNode, warm_start;  
+function fit_tree(objective, df::T, target, features, jlt::JLBoostTree, warm_start;  
 	colsample_bytree = 1, colsample_bynode=1, colsample_bylevel=1, lambda = 0, gamma = 0, 
-	max_depth = 6, verbose = false) where T <: AbstractDataFrame
+	max_depth = 6, verbose = false) where T <: Union{AbstractDataFrame, JDFFile}
 
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 	@assert colsample_bynode <= 1 && colsample_bynode > 0
@@ -22,8 +22,8 @@ function fit_tree(objective, df::T, target, features, jlt::JLBoostTreeNode, warm
 	    jlt.split = split_with_best_gain.split_at
 	    jlt.splitfeature = split_with_best_gain.feature      
 
-	    left_treenode = JLBoostTreeNode(split_with_best_gain.lweight)        
-	    right_treenode = JLBoostTreeNode(split_with_best_gain.rweight)
+	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
+	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
 
 	    if max_depth > 1
 	        # now recursively apply the weights to left branch and right branch
@@ -42,11 +42,11 @@ end
 # Fit a tree using tree boosting algorithm
 function fit_tree!(objective, df::AbstractDataFrame, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
 	# TODO keep only do not bend
-    jlt = JLBoostTreeNode(0.0)
+    jlt = JLBoostTree(0.0)
     fit_tree!(objective, df, target, features, jlt; kwargs...)
 end
 
-function fit_tree!(objective, df::T, target, features, jlt::JLBoostTreeNode;  prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, verbose = false) where T <: AbstractDataFrame
+function fit_tree!(objective, df::T, target, features, jlt::JLBoostTree;  prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, verbose = false) where T <: AbstractDataFrame
 	# initialise the weights to 0 if the column doesn't exist yet
 	if !(prev_w  in names(df))
 		@warn "You have supplied `prev_w` but it's unpopulated. Initialising with value 0.0"
@@ -67,8 +67,8 @@ function fit_tree!(objective, df::T, target, features, jlt::JLBoostTreeNode;  pr
 	    jlt.split = split_with_best_gain.split_at
 	    jlt.splitfeature = split_with_best_gain.feature      
 
-	    left_treenode = JLBoostTreeNode(split_with_best_gain.lweight)        
-	    right_treenode = JLBoostTreeNode(split_with_best_gain.rweight)
+	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
+	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
 
 	    if max_depth > 1
 	        # now recursively apply the weights to left branch and right branch

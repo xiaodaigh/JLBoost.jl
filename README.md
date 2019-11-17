@@ -13,6 +13,8 @@ This is an early WIP.
 * "Easy" to deploy
 
 ## Example
+
+### Fit model on `DataFrame`
 This is very WIP so the API is not stable yet.
 
 ```julia
@@ -22,13 +24,41 @@ iris = dataset("datasets", "iris")
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
 target = :is_setosa
 
-features = setdiff(names(iris), [:Species, :is_setosa, :prev_w])
+features = setdiff(names(iris), [:Species, :is_setosa])
 xgtree1 = jlboost(iris, target)
 xgtree2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 iris.pred1 = predict(xgtree1, iris)
 iris.pred2 = predict(xgtree2, iris)
 ```
+
+### Fit model on `JDF.JDFFile` 
+The key advantage of fitting a model using `JDF.JDFFile` is that not all the data need to be loaded into memory and hence will enable large models to be trained on a single computer.
+
+```julia
+using JLBoost, RDatasets, JDF
+iris = dataset("datasets", "iris")
+
+iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
+target = :is_setosa
+
+features = setdiff(names(iris), [:Species, :is_setosa])
+
+savejdf("iris.jdf", iris)
+irisdisk = JDFFile("iris.jdf")
+
+# fit using on disk JDF format
+xgtree1 = jlboost(irisdisk, target, features)
+xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
+
+# predict using on disk JDF format
+iris.pred1 = predict(xgtree1, irisdisk)
+iris.pred2 = predict(xgtree2, irisdisk)
+
+# clean up
+rm("iris.jdf", force=true, recursive=true)
+```
+
 
 ## Notes
 

@@ -5,6 +5,7 @@ using SortingLab
 using StatsBase: sample
 using Base.Iterators: drop
 using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
+using JDF
 #using Zygote: gradient, hessian
 #using ForwardDiff: gradient, hessian
 #using Flux: logitcrossentropy, logitbinarycrossentropy
@@ -12,8 +13,12 @@ using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
 
 export jlboost, best_split, _best_split, predict, fit_tree, logloss, jlboost!
 export update_weight
+export JLBoostTree, show, *, print, println
 
-include("JLBoostTree.jl"); using ..JLBoostTrees: JLBoostTreeNode
+# defining a type that all my methods can supported
+SupportedDFTypes = Union{AbstractDataFrame, JDFFile}
+
+include("JLBoostTree.jl"); using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree
 
 include("diagnostics.jl")
 include("g_h.jl")

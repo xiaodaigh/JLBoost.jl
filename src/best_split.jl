@@ -1,6 +1,6 @@
 export best_split
 
-function best_split(loss_fn, df::AbstractDataFrame, feature::Symbol, target::Symbol, prev_w::AbstractVector, lambda, gamma; verbose = false)
+function best_split(loss_fn, df::T, feature::Symbol, target::Symbol, prev_w::AbstractVector, lambda, gamma; verbose = false) where T <: SupportedDFTypes
     if verbose
         println("Choosing a split on ", feature)
     end
@@ -20,11 +20,11 @@ end
 
 
 """
-	best_split(loss_fn, df::AbstractDataFrame, feature, target, prev_w, lambda, gamma; verbose = false)
+	best_split(loss_fn, df::T, feature, target, prev_w, lambda, gamma; verbose = false) where T <: SupportedDFTypes
 
 Determine the best split of a given variable
 """
-function best_split(loss_fn, df::AbstractDataFrame, feature::Symbol, target::Symbol, prev_w::Symbol, lambda, gamma; verbose = false)
+function best_split(loss_fn, df::T, feature::Symbol, target::Symbol, prev_w::Symbol, lambda, gamma; verbose = false) where T <: SupportedDFTypes
     if verbose
         println("Choosing a split on ", feature)
     end

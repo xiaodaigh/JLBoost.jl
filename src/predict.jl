@@ -1,6 +1,10 @@
 export predict
 
-function predict(jlt::JLBoostTreeNode, df)
+struct IterableTraitWrapper{T}
+	object
+end
+
+function predict(jlt::AbstractJLBoostTree, df)
 	# TODO a more efficient algorithm. Currently there are too many assignbools being	
 	# stores the results
 	res = Vector{Float64}(undef, nrow(df))
@@ -12,11 +16,11 @@ function predict(jlt::JLBoostTreeNode, df)
     predict!(jlt, df, res, assignbool)
 end
 
-function predict(jlts::AbstractVector{JLBoostTreeNode{T}}, df) where T
+function predict(jlts::AbstractVector{T}, df) where T <:AbstractJLBoostTree
 	mapreduce(x->predict(x, df), +, jlts)
 end
 
-function predict!(jlt::JLBoostTreeNode, df, res, assignbool)
+function predict!(jlt::JLBoostTree, df, res, assignbool)
 	if length(jlt.children) == 2
 	    new_assignbool = assignbool .& (df[!, jlt.splitfeature] .<= jlt.split)
 	    predict!(jlt.children[1], df, res, new_assignbool)
@@ -27,4 +31,8 @@ function predict!(jlt::JLBoostTreeNode, df, res, assignbool)
 	    res[assignbool] .= res[assignbool] .+ jlt.weight
 	end
 	res
+end
+
+function predict!(jlt::WeightedJLBoostTree, df, res, assignbool)
+	jlt.eta .* predict!(jlt.tree, df, res, assignbool)
 end

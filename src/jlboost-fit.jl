@@ -21,24 +21,24 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 * colsample_bylevel: Not yet implemented
 * colsample_bynode: Not yet implemented
 """
-function jlboost(df::AbstractDataFrame, target::Symbol, warm_start::JLBoostTreeNode; kwargs...)
+function jlboost(df::T, target::Symbol, warm_start::JLBoostTree; kwargs...) where T<:SupportedDFTypes
 	jlboost(df, target, setdiff(names(df), (target,)), df->predict(warm_start, df))
 end
 
-function jlboost(df::AbstractDataFrame, target::Symbol, warm_start::AbstractVector{JLBoostTreeNode}; kwargs...)
+function jlboost(df::T, target::Symbol, warm_start::AbstractVector{JLBoostTree}; kwargs...) where T<:SupportedDFTypes
 	jlboost(df, target, setdiff(names(df), (target,)), df->predict(warm_start, df))
 end
 
-function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector{Symbol}, warm_start::JLBoostTreeNode;	kwargs...)
+function jlboost(df::T, target::Symbol, features::AbstractVector{Symbol}, warm_start::JLBoostTree;	kwargs...) where T<:SupportedDFTypes
 	jlboost(df, target, features, df->predict(warm_start, df))
 end
 
-function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector{JLBoostTreeNode};	kwargs...)
+function jlboost(df::T, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector{JLBoostTree};	kwargs...) where T<:SupportedDFTypes
 	jlboost(df, target, features, df->predict(warm_start, df))
 end
 
-function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector{Symbol} = setdiff(names(df), (target,)), warm_start = [JLBoostTreeNode(0.0)];
-	nrounds = 1, subsample = 1, eta = 1, verbose =false, kwargs...)
+function jlboost(df::T, target::Symbol, features::AbstractVector{Symbol} = setdiff(names(df), (target,)), warm_start = [JLBoostTree(0.0)];
+	nrounds = 1, subsample = 1, eta = 1, verbose =false, kwargs...) where T<:SupportedDFTypes
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, 
 	# colsample_bytree = 1, colsample_bylevel = 1,  colsample_bynode = 1,
 	
@@ -52,13 +52,13 @@ function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector
 		@warn "eta != 1 is not implemented yet"
 	end
 
-	res_jlt = Vector{JLBoostTreeNode{Float64}}(undef, nrounds)
+	res_jlt = Vector{JLBoostTree{Float64}}(undef, nrounds)
 
 	if subsample == 1
-		new_jlt = fit_tree(objective, df, target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
+		new_jlt = fit_tree(objective, df, target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
 	else
 		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-		new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
+		new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
 	end
 	res_jlt[1] = deepcopy(new_jlt)	
 	push!(warm_start, res_jlt[1])
@@ -71,10 +71,10 @@ function jlboost(df::AbstractDataFrame, target::Symbol, features::AbstractVector
 		# assign the previous weight
 		
 		if subsample == 1
-			new_jlt = fit_tree(objective, df, target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
+			new_jlt = fit_tree(objective, df, target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
 		else
 			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)			
-			new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTreeNode(0.0), warm_start; verbose = verbose, kwargs...)
+			new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
 		end		
 	    res_jlt[nround] = deepcopy(new_jlt)
 	    push!(warm_start, res_jlt[nround])
@@ -114,12 +114,12 @@ function jlboost!(df, target::Symbol, features::AbstractVector{Symbol} = setdiff
 end
 
 function jlboost!(objective, df, target, features; kwargs...)
-	jlt = JLBoostTreeNode(0.0)
+	jlt = JLBoostTree(0.0)
 	jlboost!(objective, df, target, features, jlt; kwargs...)
 end
 
 # TODO 
-function jlboost!(objective, df, target, features, jlt::JLBoostTreeNode; 
+function jlboost!(objective, df, target, features, jlt::JLBoostTree; 
 	nrounds = 1, prev_w = :prev_w, new_weight = :new_weight, base_score = 0.0, subsample = 1, 
 	colsample_bytree = 1, colsample_bylevel = 1, colsample_bynode = 1, verbose = false, kwargs...)
 
@@ -127,7 +127,7 @@ function jlboost!(objective, df, target, features, jlt::JLBoostTreeNode;
 		@warn "The column :$new_weight already exists"
 	end
 
-	res_jlt = Vector{JLBoostTreeNode}(undef, nrounds)
+	res_jlt = Vector{JLBoostTree}(undef, nrounds)
 
 	if subsample == 1
 		new_jlt = fit_tree!(objective, df, target, features, jlt; verbose = verbose, kwargs...)

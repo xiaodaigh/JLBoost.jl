@@ -1,37 +1,43 @@
 module JLBoostTrees
 
 using DataFrames
-import Base: show
+import Base: show, *, print, println
 
-export JLBoostTreeNode, JLBoostTree, show
+export JLBoostTree, show
+export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println
 
-mutable struct JLBoostTreeNode{T <: AbstractFloat}
+abstract type AbstractJLBoostTree end
+
+mutable struct JLBoostTree{T <: AbstractFloat} <: AbstractJLBoostTree
     weight::T
-    children::Vector{JLBoostTreeNode{T}}
+    children::Vector{JLBoostTree{T}}
     splitfeature
     split
-    JLBoostTreeNode(w::T) where {T <: AbstractFloat}  = new{T}(w, JLBoostTreeNode{T}[], missing, missing)
+    JLBoostTree(w::T) where {T <: AbstractFloat}  = new{T}(w, JLBoostTree{T}[], missing, missing)
 end
 
-mutable struct JLBoostTree
-    parentnode::JLBoostTreeNode
-    df::AbstractDataFrame
-    target::Symbol
-    features::Vector{Symbol}
-    prev_w::Symbol # the column that represents the sum of previous weights
-    eta::Real
-    lambda::Real
-    gamma::Real
-    maxdepth::Int
-    subsample::Real
+mutable struct WeightedJLBoostTree{T <:AbstractFloat, W<:Number} <: AbstractJLBoostTree
+	tree::JLBoostTree{T}
+	eta::W
 end
+
+*(jlt::JLBoostTree, eta::Number) = WeightedJLBoostTree(jlt, eta)
+
+*(eta::Number, jlt::JLBoostTree) = WeightedJLBoostTree(jlt, eta)
+
 
 """
 	show(io, jlt, ntabs; splitfeature="")
 
 Show a JLBoostTree
 """
-function show(io, jlt::JLBoostTreeNode, ntabs::I; splitfeature="") where {I <: Integer}
+function show(io, jlt::WeightedJLBoostTree, ntabs::I; kwargs...) where {I <: Integer}
+	println(io, "eta = $(jlt.eta) (tree weight)")
+	show(io, jlt.tree, ntabs;  kwargs...)
+end
+
+
+function show(io, jlt::JLBoostTree, ntabs::I; splitfeature="") where {I <: Integer}
     if ntabs == 0
         tabs = ""
     else ntabs >= 1
@@ -62,10 +68,18 @@ end
 """
 	show(io, jlt)
 
-Show a JLBoostTree
+Show a JLBoostTree or a Vector{JLBoostTree}
 """
-function show(io::IO, jlt::JLBoostTreeNode)
+function show(io::IO, jlt::AbstractJLBoostTree)
     show(io, jlt, 0)
+end
+
+function show(io::IO, ::MIME"text/plain", jlt::AbstractVector{T}) where T <: AbstractJLBoostTree
+	for (i, tree) in enumerate(jlt)
+		println(io, "Tree $i")
+    	show(io, tree, 0)
+    	println(io, " ")
+    end
 end
 
 end # end module
