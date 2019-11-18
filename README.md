@@ -1,6 +1,6 @@
 # JLBoost.jl
 
-This is a 100%-Julia implementation of regression-tree-boosting based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
+This is a 100%-Julia implementation of regression-tree-gradient-boosting algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
 
 This is an early WIP.
 
