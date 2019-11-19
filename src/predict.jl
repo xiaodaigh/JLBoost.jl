@@ -1,11 +1,7 @@
 export predict
 
-struct IterableTraitWrapper{T}
-	object
-end
-
 function predict(jlt::AbstractJLBoostTree, df)
-	# TODO a more efficient algorithm. Currently there are too many assignbools being	
+	# TODO a more efficient algorithm. Currently there are too many assignbools being
 	# stores the results
 	res = Vector{Float64}(undef, nrow(df))
 	res .= 0.0
@@ -16,7 +12,11 @@ function predict(jlt::AbstractJLBoostTree, df)
     predict!(jlt, df, res, assignbool)
 end
 
-function predict(jlts::AbstractVector{T}, df) where T <:AbstractJLBoostTree
+function predict(jlts::IterableTraitWrapper{T}, df::ColumnBangAccessibleTraitWrapper) where T <: AbstractJLBoostTree
+	mapreduce(x->predict(x, df), +, jlts)
+end
+
+function predict(jlts::AbstractVector{T}, df) where T <: AbstractJLBoostTree
 	mapreduce(x->predict(x, df), +, jlts)
 end
 

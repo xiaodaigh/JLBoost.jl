@@ -10,11 +10,16 @@ LossFunctions = "30fc2ffe-d236-52d8-8643-a9d8f7c094a7"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
 SortingLab = "562c1548-17b8-5b69-83cf-d8aebec229f5"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+TraitWrappers = "ef569cd2-5787-430a-a8c5-986931a3f6a1"
 
 [compat]
 DataFrames = "0.19"
 JDF = "^0.2.7"
+LossFunctions = "0.5"
+Missings = "0.4"
 SortingLab = "0.2"
+StatsBase = "0.32"
+TraitWrappers = "0.1"
 julia = "1"
 
 [extras]

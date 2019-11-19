@@ -18,8 +18,8 @@ export JLBoostTree, show, *, print, println
 # defining a type that all my methods can supported
 SupportedDFTypes = Union{AbstractDataFrame, JDFFile}
 
+include("traitwrappers.jl")
 include("JLBoostTree.jl"); using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree
-
 include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")
