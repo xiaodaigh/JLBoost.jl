@@ -1,28 +1,31 @@
 export fit_tree
 
-function fit_tree(objective, df::T, target, features, jlt::JLBoostTree, warm_start;  
-	colsample_bytree = 1, colsample_bynode=1, colsample_bylevel=1, lambda = 0, gamma = 0, 
-	max_depth = 6, verbose = false) where T <: Union{AbstractDataFrame, JDFFile}
+function fit_tree(objective, df, target, features, warm_start;
+	colsample_bytree = 1, colsample_bynode = 1, colsample_bylevel = 1, lambda = 0, gamma = 0,
+	max_depth = 6, verbose = false)
 
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 	@assert colsample_bynode <= 1 && colsample_bynode > 0
 	@assert colsample_bylevel <= 1 && colsample_bylevel > 0
 
+	jlt = JLBoostTree(0.0)
+
 	# compute the gain for all splits for all features
-	prev_w = predict(warm_start, df)
+	#prev_w = predict(, df)
+	prev_w = warm_start(df)
 
 	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]
 	# return all_splits
-	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]	
+	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]
 
 
 	# there needs to be positive gain then apply split to the tree
 	if split_with_best_gain.gain > 0
 	    # set the parent tree node
 	    jlt.split = split_with_best_gain.split_at
-	    jlt.splitfeature = split_with_best_gain.feature      
+	    jlt.splitfeature = split_with_best_gain.feature
 
-	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
+	    left_treenode = JLBoostTree(split_with_best_gain.lweight)
 	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
 
 	    if max_depth > 1
@@ -58,16 +61,16 @@ function fit_tree!(objective, df::T, target, features, jlt::JLBoostTree;  prev_w
 	end
 
 	# compute the gain for all splits for all features
-	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]    
+	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]
 	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]
 
 	# there needs to be positive gain then apply split to the tree
 	if split_with_best_gain.gain > 0
 	    # set the parent tree node
 	    jlt.split = split_with_best_gain.split_at
-	    jlt.splitfeature = split_with_best_gain.feature      
+	    jlt.splitfeature = split_with_best_gain.feature
 
-	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
+	    left_treenode = JLBoostTree(split_with_best_gain.lweight)
 	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
 
 	    if max_depth > 1

@@ -4,6 +4,7 @@ authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 JDF = "babc3d20-cd49-4f60-a736-a8f9c08892d3"
 LossFunctions = "30fc2ffe-d236-52d8-8643-a9d8f7c094a7"

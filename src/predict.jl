@@ -12,11 +12,7 @@ function predict(jlt::AbstractJLBoostTree, df)
     predict!(jlt, df, res, assignbool)
 end
 
-function predict(jlts::IterableTraitWrapper{T}, df::ColumnBangAccessibleTraitWrapper) where T <: AbstractJLBoostTree
-	mapreduce(x->predict(x, df), +, jlts)
-end
-
-function predict(jlts::AbstractVector{T}, df) where T <: AbstractJLBoostTree
+function predict(jlts, df) where T <: AbstractJLBoostTree
 	mapreduce(x->predict(x, df), +, jlts)
 end
 

@@ -14,35 +14,35 @@
 #   return -sum(y .* logsoftmax(logŷ) .* weight) * 1 // size(y, 2)
 # end
 
-g(loss::SupervisedLoss, y, prev_w) = begin
-	deriv(loss, y, 1/(1 + exp(-prev_w)))
+g(loss::SupervisedLoss, y, warmstart) = begin
+	deriv(loss, y, 1/(1 + exp(-warmstart)))
 end
 
-h(loss::SupervisedLoss, y, prev_w) = begin
-	deriv2(loss, y, 1/(1 + exp(-prev_w)))
+h(loss::SupervisedLoss, y, warmstart) = begin
+	deriv2(loss, y, 1/(1 + exp(-warmstart)))
 end
 
 
 # begin: Zygote.jl
-# g(loss::Function, y, prev_w) = begin
-# 	gres = gradient(x->loss(x, y), prev_w)
+# g(loss::Function, y, warmstart) = begin
+# 	gres = gradient(x->loss(x, y), warmstart)
 # 	gres[1]
 # end
 
-# h(loss::Function, y, prev_w) = begin
-#     hres = hessian(x->loss(x[1], y), [prev_w])
+# h(loss::Function, y, warmstart) = begin
+#     hres = hessian(x->loss(x[1], y), [warmstart])
 #     hres[1]
 # end
 # end: Zygote.jl
 
 # begin: ForwardDiff.jl
-# g(loss::Function, y, prev_w) = begin
-#     gres = ForwardDiff.gradient(x->loss(x[1], y), [prev_w])
+# g(loss::Function, y, warmstart) = begin
+#     gres = ForwardDiff.gradient(x->loss(x[1], y), [warmstart])
 #     gres[1]
 # end
 
-# h(loss::Function, y, prev_w) = begin
-#     hres = ForwardDiff.hessian(x->loss(x[1], y), [prev_w])
+# h(loss::Function, y, warmstart) = begin
+#     hres = ForwardDiff.hessian(x->loss(x[1], y), [warmstart])
 #     hres[1]
 # end
 # end: ForwardDiff.jl
