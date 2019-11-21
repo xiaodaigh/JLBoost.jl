@@ -1,7 +1,7 @@
 export jlboost!, jlboost
 
 """
-	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
+	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)), warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
 
 Fit a tree boosting model with a DataFrame, df, and target symbol and allowed features.
 
@@ -9,25 +9,31 @@ This is based on the xgboost interface, where possible the parameters have the s
 https://xgboost.readthedocs.io/en/latest/parameter.html
 
 * nrounds: Number of trees to fit
-* base_score: global bias
-* eta: The learning rate. Also the weight of each tree in the final summation of trees
+* warmstart: A vector of weight from which to start training. Defaults to 0. The warmstart may be different for every row. This is designed to allow the model to improve upon existing models.
+* eta: The learning rate. Also known as the weight of each tree in the final summation of trees
 * lambda: XGBoost lambda hyperparameter
 * gamma: XGBoost gamma hyperparameter
 * max_depth: the maximum depth of each tree
 * subsample: 0-1, the proportion of rows to subsample for each tree build
 * verbose: Print more information
-* min_child_weight:
-* colsample_bytree: Not yet implemented
+* colsample_bytree: (0-1] The proportion of feature column to sample for each tree. This
+* min_child_weight: Not yet implemented
 * colsample_bylevel: Not yet implemented
 * colsample_bynode: Not yet implemented
 """
-#jlboost(df, target::Symbol, warm_start; kwargs...) = jlboost(df, target, setdiff(names(df), (target,)), df->predict(object(warm_start), df))
+function jlboost(df, target::Symbol; kwargs...)
+	jlboost(df, target, setdiff(names(df), [target]), fill(0.0, nrow(df)); kwargs...)
+end
 
-#jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start;	kwargs...) = jlboost(df, target, features, df->predict(warm_start, df))
+function jlboost(df, target::Symbol, warm_start::AbstractVector; kwargs...)
+	jlboost(df, target, setdiff(names(df), [target]), warm_start)
+end
 
+function jlboost(df, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
+	jlboost(df, target, features, fill(0.0, nrow(df))
+end
 
-#function jlboost(df, target::Symbol, features::AbstractVector{Symbol} = setdiff(names(df), (target,)), warm_start::Function = df->predict(JLBoostTree(0.0), df);
-function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start;
+function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector;
 	nrounds = 1, subsample = 1, eta = 1, verbose =false, colsample_bytree = 1, kwargs...)
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1,
 	#, colsample_bylevel = 1,  colsample_bynode = 1,
