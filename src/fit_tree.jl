@@ -1,84 +1,53 @@
-export fit_tree
+export fit_tree!, fit_tree
 
-function fit_tree(objective, df::T, target, features, jlt::JLBoostTree, warm_start;  
-	colsample_bytree = 1, colsample_bynode=1, colsample_bylevel=1, lambda = 0, gamma = 0, 
-	max_depth = 6, verbose = false) where T <: Union{AbstractDataFrame, JDFFile}
+"""
+	_fit_tree(loss, df, target, features, warm_start, leaf_queue
+
+Fit a tree by following a algorithm
+"""
+function _fit_tree!(loss, df, target, features, warm_start, feature_choice_strategy, jlt::JLBoostTree = JLBoostTree(0.0);
+	colsample_bytree = 1, colsample_bynode = 1, colsample_bylevel = 1, lambda = 0, gamma = 0,
+	max_depth = 6, verbose = false)
 
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 	@assert colsample_bynode <= 1 && colsample_bynode > 0
 	@assert colsample_bylevel <= 1 && colsample_bylevel > 0
 
 	# compute the gain for all splits for all features
-	prev_w = predict(warm_start, df)
+	split_with_best_gain = best_split(loss, df, features[1], target, warm_start, lambda, gamma; verbose=verbose)
 
-	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]
-	# return all_splits
-	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]	
-
+	for feature in @view(features[2:end])
+		new_feature = best_split(loss, df, feature, target, warm_start, lambda, gamma; verbose=verbose)
+		if new_feature.gain > split_with_best_gain.gain
+			split_with_best_gain = new_feature
+		end
+	end
+	#return split_with_best_gain
 
 	# there needs to be positive gain then apply split to the tree
 	if split_with_best_gain.gain > 0
 	    # set the parent tree node
+		if verbose
+			println(split_with_best_gain)
+		end
 	    jlt.split = split_with_best_gain.split_at
-	    jlt.splitfeature = split_with_best_gain.feature      
+	    jlt.splitfeature = split_with_best_gain.feature
 
-	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
-	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
+	    left_treenode = JLBoostTree(split_with_best_gain.lweight, jlt)
+	    right_treenode = JLBoostTree(split_with_best_gain.rweight, jlt)
+	    jlt.children = [left_treenode, right_treenode]
 
 	    if max_depth > 1
-	        # now recursively apply the weights to left branch and right branch
-	        df_left = @view(df[df[!, split_with_best_gain.feature] .<= split_with_best_gain.split_at,:])
-	        df_right = @view(df[df[!, split_with_best_gain.feature] .> split_with_best_gain.split_at,:])
-
-	        left_treenode  = fit_tree(objective, df_left,  target, features, left_treenode, warm_start; lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
-	        right_treenode = fit_tree(objective, df_right, target, features, right_treenode, warm_start; lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
-	    end
-	    jlt.children = [left_treenode, right_treenode]
+		 	 # now recursively apply the weights to left branch and right branch
+			 left_bool = df[!, split_with_best_gain.feature] .<= split_with_best_gain.split_at
+			 right_bool = df[!, split_with_best_gain.feature] .> split_with_best_gain.split_at
+		 	 df_left = @view(df[left_bool,:])
+		 	 df_right = @view(df[right_bool, :])
+			 warm_start_left = @view(warm_start[left_bool])
+			 warm_start_right = @view(warm_start[right_bool])
+		 	 left_treenode  = _fit_tree!(loss, df_left,  target, features, warm_start_left, nothing, left_treenode ;  lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
+		 	 right_treenode = _fit_tree!(loss, df_right, target, features, warm_start_right, nothing, right_treenode; lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
+	     end
 	end
-	jlt
-end
-
-
-# Fit a tree using tree boosting algorithm
-function fit_tree!(objective, df::AbstractDataFrame, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
-	# TODO keep only do not bend
-    jlt = JLBoostTree(0.0)
-    fit_tree!(objective, df, target, features, jlt; kwargs...)
-end
-
-function fit_tree!(objective, df::T, target, features, jlt::JLBoostTree;  prev_w = :prev_w, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, verbose = false) where T <: AbstractDataFrame
-	# initialise the weights to 0 if the column doesn't exist yet
-	if !(prev_w  in names(df))
-		@warn "You have supplied `prev_w` but it's unpopulated. Initialising with value 0.0"
-		if T <: SubDataFrame
-	    	parent(df)[!, prev_w] .= 0.0
-	    else
-	    	df[!, prev_w] .= 0.0
-	    end
-	end
-
-	# compute the gain for all splits for all features
-	all_splits = [best_split(objective, df, feature, target, prev_w, lambda, gamma; verbose=verbose) for feature in features]    
-	split_with_best_gain = all_splits[findmax(map(x->x.gain, all_splits))[2]]
-
-	# there needs to be positive gain then apply split to the tree
-	if split_with_best_gain.gain > 0
-	    # set the parent tree node
-	    jlt.split = split_with_best_gain.split_at
-	    jlt.splitfeature = split_with_best_gain.feature      
-
-	    left_treenode = JLBoostTree(split_with_best_gain.lweight)        
-	    right_treenode = JLBoostTree(split_with_best_gain.rweight)
-
-	    if max_depth > 1
-	        # now recursively apply the weights to left branch and right branch
-	        df_left = @view(df[df[!, split_with_best_gain.feature] .<= split_with_best_gain.split_at,:])
-	        df_right = @view(df[df[!, split_with_best_gain.feature] .> split_with_best_gain.split_at,:])
-
-	        left_treenode  = fit_tree!(objective, df_left,  target, features, left_treenode;  prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
-	        right_treenode = fit_tree!(objective, df_right, target, features, right_treenode; prev_w = prev_w, eta = eta, lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
-	    end
-	    jlt.children = [left_treenode, right_treenode]
-	end
-	jlt
+ 	jlt
 end
