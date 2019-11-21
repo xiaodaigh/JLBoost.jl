@@ -30,10 +30,10 @@ function jlboost(df, target::Symbol, warm_start::AbstractVector; kwargs...)
 end
 
 function jlboost(df, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
-	jlboost(df, target, features, fill(0.0, nrow(df))
+	jlboost(df, target, features, fill(0.0, nrow(df)))
 end
 
-function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector;
+function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector, loss = LogitLogLoss();
 	nrounds = 1, subsample = 1, eta = 1, verbose =false, colsample_bytree = 1, kwargs...)
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1,
 	#, colsample_bylevel = 1,  colsample_bynode = 1,
@@ -42,13 +42,10 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	@assert subsample <= 1 && subsample > 0
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 
-	@warn "only binary classification is supported"
-	loss = LogitLogLoss()
-
 	res_jlt = Vector{JLBoostTree{Float64}}(undef, nrounds)
-	# for i in 1:nrounds
-	# 	res_jlt[i] = JLBoostTree(0.0)
-	# end
+	for i in 1:nrounds
+	 	res_jlt[i] = JLBoostTree(0.0)
+	end
 
 	if colsample_bytree < 1
 		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
@@ -64,7 +61,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 		warm_start = fill(0.0, length(rows))
 		new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 	end
-	res_jlt[1] = deepcopy(new_jlt)
+	res_jlt[1] = deepcopy(new_jlt);
 
 	for nround in 2:nrounds
 		if verbose

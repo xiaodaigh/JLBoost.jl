@@ -67,6 +67,27 @@ new_tree = 0.3 * xgtree1[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(xgtree[1], iris)) # 0.3
 ```
 
+#### Regression Model
+By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type from the `LossFunctions.jl` `SupervisedLoss` type. E.g for regression models you can choose the leaast squares loss called `L2DistLoss()`
+
+```julia
+using DataFrames
+using JLBoost
+df = DataFrame(x = rand(100) * 100)
+
+df[!, :y] = 2*df.x .+ rand(100)
+
+target = :y
+features = [:x]
+warm_start = fill(0.0, nrow(df))
+
+
+using LossFunctions: L2DistLoss
+loss = L2DistLoss()
+jlboost(df, target, features, warm_start, loss)
+```
+
+
 ### Fit model on `JDF.JDFFile`
 Sometimes, you may want to fit a model on a dataset that is too large to fit into RAM. You can convert the dataset to [JDF format](https://github.com/xiaodaigh/JDF.jl) and then use `JDF.JDFFile` functionalities to fit the models. The interface `jlbosst` for `DataFrame` and `JDFFiLe` are the same.
 
