@@ -10,10 +10,12 @@ abstract type AbstractJLBoostTree end
 
 mutable struct JLBoostTree{T <: AbstractFloat} <: AbstractJLBoostTree
     weight::T
+	parent::Union{JLBoostTree{T}, Nothing}
     children::Vector{JLBoostTree{T}}
     splitfeature
     split
-    JLBoostTree(w::T) where {T <: AbstractFloat}  = new{T}(w, JLBoostTree{T}[], missing, missing)
+    JLBoostTree(w::T) where {T <: AbstractFloat}  = new{T}(w, nothing, JLBoostTree{T}[], missing, missing)
+	JLBoostTree(w::T, parent::JLBoostTree{T}) where {T <: AbstractFloat}  = new{T}(w, parent, JLBoostTree{T}[], missing, missing)
 end
 
 mutable struct WeightedJLBoostTree{T <:AbstractFloat, W<:Number} <: AbstractJLBoostTree

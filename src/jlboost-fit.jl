@@ -21,52 +21,69 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 * colsample_bylevel: Not yet implemented
 * colsample_bynode: Not yet implemented
 """
-jlboost(df, target::Symbol, warm_start; kwargs...) = jlboost(df, target, setdiff(names(df), (target,)), df->predict(object(warm_start), df))
+#jlboost(df, target::Symbol, warm_start; kwargs...) = jlboost(df, target, setdiff(names(df), (target,)), df->predict(object(warm_start), df))
 
-jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start;	kwargs...) = jlboost(df, target, features, df->predict(warm_start, df))
+#jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start;	kwargs...) = jlboost(df, target, features, df->predict(warm_start, df))
 
 
-function jlboost(df, target::Symbol, features::AbstractVector{Symbol} = setdiff(names(df), (target,)), warm_start::Function = df->predict(JLBoostTree(0.0), df);
-	nrounds = 1, subsample = 1, eta = 1, verbose =false, kwargs...)
+#function jlboost(df, target::Symbol, features::AbstractVector{Symbol} = setdiff(names(df), (target,)), warm_start::Function = df->predict(JLBoostTree(0.0), df);
+function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start;
+	nrounds = 1, subsample = 1, eta = 1, verbose =false, colsample_bytree = 1, kwargs...)
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1,
-	# colsample_bytree = 1, colsample_bylevel = 1,  colsample_bynode = 1,
+	#, colsample_bylevel = 1,  colsample_bynode = 1,
 
 	@assert nrounds >= 1
 	@assert subsample <= 1 && subsample > 0
+	@assert colsample_bytree <= 1 && colsample_bytree > 0
 
 	@warn "only binary classification is supported"
-	objective = LogitProbLoss()
-
-	if eta != 1
-		@warn "eta != 1 is not implemented yet"
-	end
+	loss = LogitLogLoss()
 
 	res_jlt = Vector{JLBoostTree{Float64}}(undef, nrounds)
+	# for i in 1:nrounds
+	# 	res_jlt[i] = JLBoostTree(0.0)
+	# end
+
+	if colsample_bytree < 1
+		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
+	else
+		features_sample = features
+	end
 
 	if subsample == 1
-		new_jlt = fit_tree(objective, df, target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
+		warm_start = fill(0.0, nrow(df))
+		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 	else
 		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-		new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
+		warm_start = fill(0.0, length(rows))
+		new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 	end
 	res_jlt[1] = deepcopy(new_jlt)
-	push!(warm_start, res_jlt[1])
 
 	for nround in 2:nrounds
 		if verbose
 			println("Fitting tree #$(nround)")
-			println("creating new column weight$(nround-1) to store weight of previous tree")
 		end
 		# assign the previous weight
 
+		if colsample_bytree < 1
+			features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
+		else
+			features_sample = features
+		end
+
 		if subsample == 1
-			new_jlt = fit_tree(objective, df, target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
+			warm_start = predict(res_jlt[1:nrounds-1], df)
+			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 		else
 			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-			new_jlt = fit_tree(objective, @view(df[rows, :]), target, features, JLBoostTree(0.0), warm_start; verbose = verbose, kwargs...)
+			warm_start = predict(res_jlt[1:nrounds-1], @view(df[rows, :]))
+
+			new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 		end
 	    res_jlt[nround] = deepcopy(new_jlt)
-	    push!(warm_start, res_jlt[nround])
 	end
 	res_jlt
 end
+
+#_fit_tree!(loss, df, target, features, warm_start, nothing, jlt::JLBoostTree = JLBoostTree(0.0);

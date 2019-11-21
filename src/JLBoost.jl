@@ -14,6 +14,7 @@ using JDF
 export jlboost, best_split, _best_split, predict, fit_tree, logloss, jlboost!
 export update_weight
 export JLBoostTree, show, *, print, println
+export LogitLogloss, value, deriv, deriv2
 
 # defining a type that all my methods can supported
 SupportedDFTypes = Union{AbstractDataFrame, JDFFile}

@@ -1,73 +1,47 @@
 using CuArrays
+using Statistics: mean
 
 export best_split
 
-# function best_split(loss_fn, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false)
-#     if verbose
-#         println("Choosing a split on ", feature)
-#     end
-#
-#     df2 = df[:, [target, feature]]
-#     df2[!, Symbol("  __jl_boost_zj_is_awesome__  ")] = warmstart
-#
-#     sort!(df2, feature)
-#
-#     x = df2[!, feature];
-#     target_vec = df2[!, target];
-#     warmstart_vec = df2[!, Symbol("  __jl_boost_zj_is_awesome__  ")];
-#
-#     split_res = best_split(loss_fn, x, target_vec, warmstart_vec, lambda, gamma, verbose)
-#     (feature = feature, split_res...)
-# end
+function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false)
+     if verbose
+         println("Choosing a split on ", feature)
+     end
 
-# ZJ: disallowing best_split to operate on DataFrames as using DataFrames sort may not be fast
-# """
-# 	best_split(loss_fn, df::T, feature, target, warmstart, lambda, gamma; verbose = false) where T <: SupportedDFTypes
-#
-# Determine the best split of a given variable
-# """
-# function best_split(loss_fn, df, feature::Symbol, target::Symbol, warmstart::Symbol, lambda, gamma; verbose = false)
-#     if verbose
-#         println("Choosing a split on ", feature)
-#     end
-#     df2 = sort(df[!, [target, feature, warmstart]], feature)
-#
-#     x = df2[!, feature];
-#     target_vec = df2[!, target];
-#     warmstart_vec = df2[!, warmstart];
-#
-#     split_res = best_split(loss_fn, x, target_vec, warmstart_vec, lambda, gamma, verbose)
-#     (feature = feature, split_res...)
-# end
+     x = df[!, feature];
+     target_vec = df[!, target];
+
+     split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose)
+     (feature = feature, split_res...)
+end
 
 
 """
-    best_split(loss_fn, feature, target, warmstart, lambda, gamma)
+    best_split(loss, feature, target, warmstart, lambda, gamma)
 
-Find the best (binary) split point by optimizing ∑ loss_fn(warmstart + δx, target) using order-2 Taylor series expexpansion.
+Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
 
-Feature, target, and warmstart sorted.
+Does not assume that Feature, target, and warmstart sorted and will sort them for you.
 """
-function best_split(loss_fn, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
+function best_split(loss, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
 	@assert length(feature) == length(target)
 	@assert length(feature) == length(warmstart)
     if issorted(feature)
-        res = _best_split(loss_fn, feature, target, warmstart, lambda, gamma; kwargs...)
+        res = _best_split(loss, feature, target, warmstart, lambda, gamma; kwargs...)
     else
         s = fsortperm(feature)
-        res = _best_split(loss_fn, @view(feature[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
+        res = _best_split(loss, @view(feature[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
     end
 end
 
 """
 	_best_split(fn, f, t, p, lambda, gamma, verbose)
 
-Assume that f, t, p are iterable and that they are sorted
+Assume that f, t, p are iterable and that they are sorted. Intended for advance users only
 """
-# TODO GPU friendly code
-function _best_split(loss_fn, feature, target, warmstart, lambda::Number, gamma::Number; verbose = false)
-	cg = cumsum(g.(loss_fn, target, warmstart))
-    ch = cumsum(h.(loss_fn, target, warmstart))
+function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; verbose = false)
+	cg = cumsum(g.(loss, target, warmstart))
+    ch = cumsum(h.(loss, target, warmstart))
 
     max_cg = cg[end]
     max_ch = ch[end]
@@ -112,22 +86,41 @@ function _best_split(loss_fn, feature, target, warmstart, lambda::Number, gamma:
     end
 
     (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
+
+	# the other way will saturdate the moves
+	# lw = sum(@view(target[1:cutpt]))/cutpt
+	# rw = sum(@view(target[cutpt+1:end]))/(length(target) - cutpt)
+	#
+	# (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = log(lw/(1-lw)) - mean(@view(warmstart[1:cutpt])) , rweight = log(rw/(1-rw))- mean(@view(warmstart[cutpt+1:end])))
 end
 
-function _best_split(loss_fn, feature::CuArray, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
-	g1 = g.(loss_fn, target, warmstart)
-	h1 = h.(loss_fn, target, warmstart)
+# TODO more reseach into GPU friendliness
+function _best_split(loss, feature, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
+	g1 = g.(loss, target, warmstart)
+	h1 = h.(loss, target, warmstart)
+
+	cg = cumsum(g1)
+	ch = cumsum(h1)
 
 	max_cg = sum(g1)
-	max_ch = sum(ch)
+	max_ch = sum(h1)
+
 	lambda = 0.0
 	gamma = 0.0
-	left_split = cumsum(g1).^2 ./ (ch .+ lambda)
-	right_split = (max_cg .- cumsum(g1)).^(2) ./ ((max_ch .- ch) .+ lambda)
+	left_split = cumsum(g1).^2 ./ (cumsum(h1) .+ lambda)
+	right_split = (max_cg .- cumsum(g1)).^(2) ./ ((max_ch .- cumsum(h1)) .+ lambda)
 	no_split = max_cg^2 / (max_ch + lambda)
 	gain = left_split .+  right_split .- no_split .- gamma
 
-	fg = findmax(gain)
+	# find the positions where values change because it's only meaningful to cut
+	# at where the values change
+	i = findall(!=(0), diff(feature))
 
-	(split_at = fg)
+	split_at, cutpt_i = findmax(gain[i])
+	cutpt = i[cutpt_i]
+	best_gain = gain[cutpt]
+	lweight = -cg[cutpt] / (ch[cutpt] + lambda)
+	rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
+
+	(split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
 end

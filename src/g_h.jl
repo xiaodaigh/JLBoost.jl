@@ -1,3 +1,5 @@
+export LogitLogLoss, value, deriv, deriv2
+
 # set up loss functions
 # The Flux implemnetation
 # logloss = logitbinarycrossentropy
@@ -14,12 +16,25 @@
 #   return -sum(y .* logsoftmax(logŷ) .* weight) * 1 // size(y, 2)
 # end
 
+import LossFunctions:  SupervisedLoss, deriv, value, deriv2
+struct LogitLogLoss <: SupervisedLoss end
+
+logit(w) = 1/(1 + exp(-w))
+
+value(::LogitLogLoss, y::Number, w::Number) = -(y*log(logit(w)) + (1-y)*log(1-logit(w)))
+
+# https://www.wolframalpha.com/input/?i=f%28w%29+%3D+-%28y*log%281%2F%281+%2B+exp%28-w%29%29%29+%2B+%281-y%29*log%281-1%2F%281+%2B+exp%28-w%29%29%29%29%2C+df%2Fdw
+deriv(::LogitLogLoss, y::Number, w::Number) = -logit(-w) - y + 1
+
+# https://www.wolframalpha.com/input/?i=f%28w%29+%3D+-%28e%5Ew+%28-1+%2B+y%29+%2B+y%29%2F%281+%2B+e%5Ew%29%2C+df%2Fdw
+deriv2(::LogitLogLoss, y::Number, w::Number) = exp(w)*(logit(-w)^2)
+
 g(loss::SupervisedLoss, y, warmstart) = begin
-	deriv(loss, y, 1/(1 + exp(-warmstart)))
+	deriv(loss, y, warmstart)
 end
 
 h(loss::SupervisedLoss, y, warmstart) = begin
-	deriv2(loss, y, 1/(1 + exp(-warmstart)))
+	deriv2(loss, y, warmstart)
 end
 
 
