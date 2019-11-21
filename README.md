@@ -3,11 +3,11 @@
 This is a 100%-Julia implementation of regression-tree-gradient-boosting algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
 
 ## Limitations for now
-* Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
-* Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
+* Currently, only the scalar-target models are supported. Multivariate-target models support are *planned*.
+* Currently, only the numeric and boolean features are supported. Categorical feature support are *planned*.
 
 ## Objectives
-* A full-featured tree boosting library with fitting and inference support
+* A full-featured gradient boosting regression tree package with model fit and inference support
 * Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
