@@ -68,7 +68,7 @@ unique(predict(new_tree, iris) ./ predict(xgtree[1], iris)) # 0.3
 ```
 
 #### Regression Model
-By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type from the `LossFunctions.jl` `SupervisedLoss` type. E.g for regression models you can choose the leaast squares loss called `L2DistLoss()`
+By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type with function-type that sub-types `LossFunctions.jl`'s `SupervisedLoss` type. E.g for regression models you can choose the least-squares loss called `L2DistLoss()`
 
 ```julia
 using DataFrames
