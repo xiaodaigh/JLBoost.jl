@@ -1,4 +1,4 @@
-using TraitWrappers
+# using TraitWrappers
 
 # abstract type AbstractJLBoostPredictTraitWrapper <: AbstractTraitWrapper end
 #

@@ -1,4 +1,4 @@
-using CuArrays
+#using CuArrays
 using Statistics: mean
 
 export best_split
@@ -95,32 +95,32 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
 end
 
 # TODO more reseach into GPU friendliness
-function _best_split(loss, feature, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
-	g1 = g.(loss, target, warmstart)
-	h1 = h.(loss, target, warmstart)
-
-	cg = cumsum(g1)
-	ch = cumsum(h1)
-
-	max_cg = sum(g1)
-	max_ch = sum(h1)
-
-	lambda = 0.0
-	gamma = 0.0
-	left_split = cumsum(g1).^2 ./ (cumsum(h1) .+ lambda)
-	right_split = (max_cg .- cumsum(g1)).^(2) ./ ((max_ch .- cumsum(h1)) .+ lambda)
-	no_split = max_cg^2 / (max_ch + lambda)
-	gain = left_split .+  right_split .- no_split .- gamma
-
-	# find the positions where values change because it's only meaningful to cut
-	# at where the values change
-	i = findall(!=(0), diff(feature))
-
-	split_at, cutpt_i = findmax(gain[i])
-	cutpt = i[cutpt_i]
-	best_gain = gain[cutpt]
-	lweight = -cg[cutpt] / (ch[cutpt] + lambda)
-	rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
-
-	(split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
-end
+# function _best_split(loss, feature, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
+# 	g1 = g.(loss, target, warmstart)
+# 	h1 = h.(loss, target, warmstart)
+#
+# 	cg = cumsum(g1)
+# 	ch = cumsum(h1)
+#
+# 	max_cg = sum(g1)
+# 	max_ch = sum(h1)
+#
+# 	lambda = 0.0
+# 	gamma = 0.0
+# 	left_split = cumsum(g1).^2 ./ (cumsum(h1) .+ lambda)
+# 	right_split = (max_cg .- cumsum(g1)).^(2) ./ ((max_ch .- cumsum(h1)) .+ lambda)
+# 	no_split = max_cg^2 / (max_ch + lambda)
+# 	gain = left_split .+  right_split .- no_split .- gamma
+#
+# 	# find the positions where values change because it's only meaningful to cut
+# 	# at where the values change
+# 	i = findall(!=(0), diff(feature))
+#
+# 	split_at, cutpt_i = findmax(gain[i])
+# 	cutpt = i[cutpt_i]
+# 	best_gain = gain[cutpt]
+# 	lweight = -cg[cutpt] / (ch[cutpt] + lambda)
+# 	rweight = -(max_cg - cg[cutpt])/(max_ch - ch[cutpt] + lambda)
+#
+# 	(split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
+# end

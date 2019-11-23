@@ -32,39 +32,39 @@ features = setdiff(names(iris), [:Species, :is_setosa])
 
 # fit one tree
 # ?jlboost for more details
-xgtree1 = jlboost(iris, target)
+xgtreemodel = jlboost(iris, target)
 ```
 
-The returned model is a vector of trees
+The returned model contains a vector of trees and the loss function and target
 
 ```julia
-typeof(xgtree1) # Array{JLBoostTree{Float64},1}
+typeof(trees(xgtreemodel)) # Array{JLBoostTree,1}
+typeof(xgtreemodel.loss)
+typeof(xgtreemodel.target)
 ```
 
 You can control parameters like  `max_depth` and `nrounds`
 ```julia
-xgtree2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
+xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 ```
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
 ```julia
-iris.pred1 = predict(xgtree1, iris)
-iris.pred2 = predict(xgtree2, iris)
-iris.pred1_plus_2 = predict(vcat(xgtree1, xgtree2), iris)
+iris.pred1 = predict(xgtreemodel, iris)
+iris.pred2 = predict(xgtreemodel2, iris)
+iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
 ```
 
 There are also convenience functions for computing the AUC.
 ```julia
-iris.pred1 = predict(xgtree1, iris)
-iris.pred2 = predict(xgtree2, iris)
-iris.pred1_plus_2 = predict(vcat(xgtree1, xgtree2), iris)
+AUC(-iris.pred1, iris.is_setosa)[1]
 ```
 
 As a convenience feature, you can adjust the `eta` weight of each tree by multiplying it by a factor e.g.
 
 ```Julia
-new_tree = 0.3 * xgtree1[1] # weight the first tree by 30%
-unique(predict(new_tree, iris) ./ predict(xgtree[1], iris)) # 0.3
+new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
+unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
 #### Regression Model
@@ -114,7 +114,7 @@ iris.pred1 = predict(xgtree1, irisdisk)
 iris.pred2 = predict(xgtree2, irisdisk)
 
 # AUC
-AUC(-predict(xgtree1, irisdisk), irisdisk[!, :Species])[1]
+AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])[1]
 
 # clean up
 rm("iris.jdf", force=true, recursive=true)

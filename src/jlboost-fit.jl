@@ -30,7 +30,7 @@ function jlboost(df, target::Symbol, warm_start::AbstractVector; kwargs...)
 end
 
 function jlboost(df, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
-	jlboost(df, target, features, fill(0.0, nrow(df)))
+	jlboost(df, target, features, fill(0.0, nrow(df)); kwargs...)
 end
 
 function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector, loss = LogitLogLoss();
@@ -42,7 +42,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	@assert subsample <= 1 && subsample > 0
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 
-	res_jlt = Vector{JLBoostTree{Float64}}(undef, nrounds)
+	res_jlt = Vector{JLBoostTree}(undef, nrounds)
 	for i in 1:nrounds
 	 	res_jlt[i] = JLBoostTree(0.0)
 	end
@@ -87,6 +87,8 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	    res_jlt[nround] = deepcopy(new_jlt)
 	end
 	res_jlt
+
+	JLBoostTreeModel(res_jlt, loss, target)
 end
 
 #_fit_tree!(loss, df, target, features, warm_start, nothing, jlt::JLBoostTree = JLBoostTree(0.0);
