@@ -1,5 +1,7 @@
 export predict
 
+predict(jlt::JLBoostTreeModel, df) = predict(trees(jlt), df)
+
 function predict(jlt::AbstractJLBoostTree, df)
 	# TODO a more efficient algorithm. Currently there are too many assignbools being
 	# stores the results

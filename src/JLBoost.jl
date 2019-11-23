@@ -14,19 +14,27 @@ using JDF
 export jlboost, best_split, _best_split, predict, fit_tree, logloss, jlboost!
 export update_weight
 export JLBoostTree, show, *, print, println
-export LogitLogloss, value, deriv, deriv2
+export LogitLogloss, value, deriv, deriv2, trees
+export JLBoostTreeModel, JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 
 # defining a type that all my methods can supported
 SupportedDFTypes = Union{AbstractDataFrame, JDFFile}
 
 include("traitwrappers.jl")
-include("JLBoostTree.jl"); using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree
+
+include("JLBoostTree.jl");
+using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
+    JLBoostTreeModel, trees, vcat
+
+
 include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")
 include("fit_tree.jl")
 include("predict.jl")
 include("jlboost-fit.jl")
+include("get-features.jl")
+include("feature-importance.jl")
 
 
 # update the weight once so that it starts at a better point

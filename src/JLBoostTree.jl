@@ -3,24 +3,45 @@ module JLBoostTrees
 using DataFrames
 import Base: show, *, print, println
 
-export JLBoostTree, show
-export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println
+export JLBoostTree, JLBoostTreeModel, show, trees
+export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println, vcat
 
 abstract type AbstractJLBoostTree end
 
-mutable struct JLBoostTree{T <: AbstractFloat} <: AbstractJLBoostTree
-    weight::T
-	parent::Union{JLBoostTree{T}, Nothing}
-    children::Vector{JLBoostTree{T}}
-    splitfeature
-    split
-    JLBoostTree(w::T) where {T <: AbstractFloat}  = new{T}(w, nothing, JLBoostTree{T}[], missing, missing)
-	JLBoostTree(w::T, parent::JLBoostTree{T}) where {T <: AbstractFloat}  = new{T}(w, parent, JLBoostTree{T}[], missing, missing)
+mutable struct JLBoostTreeModel
+	jlt::Vector
+	loss
+	target::Symbol
 end
 
-mutable struct WeightedJLBoostTree{T <:AbstractFloat, W<:Number} <: AbstractJLBoostTree
-	tree::JLBoostTree{T}
-	eta::W
+"""
+	trees(jlt::JLBoostTreeModel)
+
+Return the tree
+"""
+trees(jlt::JLBoostTreeModel) = jlt.jlt
+
+import Base: vcat
+
+vcat(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
+	v3 = deepcopy(v1)
+	v3.jlt = vcat(trees(v1), trees(v2))
+	v3
+end
+
+mutable struct JLBoostTree <: AbstractJLBoostTree
+    weight
+	parent::Union{JLBoostTree, Nothing}
+    children::Vector
+    splitfeature
+    split
+    JLBoostTree(w::T) where {T <: AbstractFloat}  = new(w, nothing, JLBoostTree[], missing, missing)
+	JLBoostTree(w::T, parent::JLBoostTree) where {T <: AbstractFloat}  = new(w, parent, JLBoostTree[], missing, missing)
+end
+
+mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
+	tree::JLBoostTree
+	eta::Number
 end
 
 *(jlt::JLBoostTree, eta::Number) = WeightedJLBoostTree(jlt, eta)
