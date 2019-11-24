@@ -87,7 +87,13 @@ X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 using MLJBase
 model = JLBoostModel()
+```
+
+```julia
 mljmodel = fit(model, 1, X, y)
+```
+
+```julia
 predict(model, mljmodel.fitresult, X)
 ```
 
