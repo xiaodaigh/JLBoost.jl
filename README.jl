@@ -1,7 +1,39 @@
 using Pkg
 Pkg.activate("c:/git/JLBoost")
-using DataFrames
+@time using DataFrames
+@time using JDF
+@time using JLBoost, LossFunctions
 
+using JLBoost, RDatasets
+iris = dataset("datasets", "iris")
+
+iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
+target = :is_setosa
+
+features = setdiff(names(iris), [:Species, :is_setosa])
+
+# fit one tree
+# ?jlboost for more details
+xgtreemodel = jlboost(iris, target)
+
+feature_importance(xgtreemodel, iris)
+
+typeof(trees(xgtreemodel)) # Array{JLBoostTree,1}
+typeof(xgtreemodel.loss)
+typeof(xgtreemodel.target)
+
+xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
+
+iris.pred1 = predict(xgtreemodel, iris)
+iris.pred2 = predict(xgtreemodel2, iris)
+iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
+
+new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
+unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
+
+
+
+using DataFrames
 using JLBoost
 df = DataFrame(x = rand(100) * 100)
 
@@ -14,49 +46,39 @@ warm_start = fill(0.0, nrow(df))
 
 using LossFunctions: L2DistLoss
 loss = L2DistLoss()
-jlboost(df, target, features, warm_start, loss)
+treemodel = jlboost(df, target, features, warm_start, loss)
 
-nrounds = 1
 
-res_jlt = Vector{JLBoostTree{Float64}}(undef, nrounds)
 
-if colsample_bytree < 1
-	features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-else
-	features_sample = features
-end
+using JLBoost, RDatasets, JDF
+iris = dataset("datasets", "iris")
 
-if subsample == 1
-	warm_start = fill(0.0, nrow(df))
-	new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
-else
-	rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-	warm_start = fill(0.0, length(rows))
-	new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
-end
-res_jlt[1] = deepcopy(new_jlt)
+iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
+target = :is_setosa
 
-for nround in 2:nrounds
-	if verbose
-		println("Fitting tree #$(nround)")
-	end
-	# assign the previous weight
+features = setdiff(names(iris), [:Species, :is_setosa])
 
-	if colsample_bytree < 1
-		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-	else
-		features_sample = features
-	end
+savejdf("iris.jdf", iris)
+irisdisk = JDFFile("iris.jdf")
 
-	if subsample == 1
-		warm_start = predict(res_jlt[1:nrounds-1], df)
-		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
-	else
-		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-		warm_start = predict(res_jlt[1:nrounds-1], @view(df[rows, :]))
+# fit using on disk JDF format
+xgtree1 = jlboost(irisdisk, target, features)
+xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
 
-		new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
-	end
-    res_jlt[nround] = deepcopy(new_jlt)
-end
-res_jlt
+# predict using on disk JDF format
+iris.pred1 = predict(xgtree1, irisdisk)
+iris.pred2 = predict(xgtree2, irisdisk)
+
+# AUC
+AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])[1]
+
+# clean up
+rm("iris.jdf", force=true, recursive=true)
+
+
+
+## Notes
+
+Currently has a CPU implementation of the `xgboost` binary boosting algorithm as described in the original paper. I am trying to implement the algorithms in the original `xgboost` paper. I want to implement the algorithms mentioned in LigthGBM and Catboost and to port them to GPUs.
+
+There is a similar project called [JuML.jl](https://github.com/Statfactory/JuML.jl).
