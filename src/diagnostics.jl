@@ -1,6 +1,6 @@
 export AUC, gini
 
-function AUC(score, target; plotauc = false)
+function AUC_plot_data(score, target;  plotauc = false)
     tmpdf = by(
         DataFrame(score=score, target = target),
         :score,
@@ -15,10 +15,31 @@ function AUC(score, target; plotauc = false)
         plot(vcat(0,cu), vcat(0,cutarget))
         plot!([0,1],[0,1])
     end
-    (sum((cutarget[2:end] .+ cutarget[1:end-1]).*(cu[2:end].-cu[1:end-1])./2), (cu, cutarget))
+
+    cu, cutarget
 end
 
+"""
+    AUC(score, target; plotauc = false)
+
+Return the AUC. To generate a plot set `plotauc=true`.
+"""
+function AUC(score, target; kwargs...)
+    cu, cutarget = AUC_plot_data(score, target; kwargs...)
+    sum((cutarget[2:end] .+ cutarget[1:end-1]).*(cu[2:end].-cu[1:end-1])./2)
+end
+
+"""
+    gini(score, target; plotauc = false)
+
+Return the `gini = (AUC - 0.5)/0.05 = 2AUC - 1`. AUC is the area under the curve while gini
+is the ratio of (AUC minus the area of the bottom triangle) vs (Area of upper triangle).
+
+For AUC a random model has AUC = 0.5 but for gini a random model has gini = 0.0
+
+To generate a plot set `plotauc=true`.
+"""
 function gini(score, target; plotauc = false)
-    auc, data = AUC(score,target; plotauc = plotauc)
-    (2*auc-1, data)
+    auc = AUC(score,target; plotauc = plotauc)
+    2*auc-1
 end

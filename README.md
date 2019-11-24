@@ -1,13 +1,16 @@
 # JLBoost.jl
 
-This is a 100%-Julia implementation of Gradient Boosting Regression Trees (GBRT) algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decisiont Trees (GBDT)
+This is a 100%-Julia implementation of regression-tree-gradient-boosting algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
+
+## Limitations for now
+* Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
+* Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
 
 ## Objectives
-* A full-featured Gradient Boosting Regression Tree package with model fit and inference support
+* A full-featured tree boosting library with fitting and inference support
 * Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
-* A batteries-included approach
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
 
@@ -154,14 +157,25 @@ iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
 
 
 
-There are also convenience functions for computing the AUC.
+There are also convenience functions for computing the AUC and gini
 ````julia
-AUC(-iris.pred1, iris.is_setosa)[1]
+AUC(-iris.pred1, iris.is_setosa)
 ````
 
 
 ````
 0.6666666666666667
+````
+
+
+
+````julia
+gini(-iris.pred1, iris.is_setosa)
+````
+
+
+````
+0.3333333333333335
 ````
 
 
@@ -196,7 +210,7 @@ feature_importance(xgtreemodel, iris)
 
 
 #### Regression Model
-By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type with function-type that sub-types `LossFunctions.jl`'s `SupervisedLoss` type. E.g for regression models you can choose the least-squares loss called `L2DistLoss()`
+By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type from the `LossFunctions.jl` `SupervisedLoss` type. E.g for regression models you can choose the leaast squares loss called `L2DistLoss()`
 
 ````julia
 using DataFrames
@@ -218,19 +232,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 47.15309855518801
-     -- x <= 25.308590491676284
-       ---- weight = 31.13993600269423
+   -- x <= 56.70727481650102
+     -- x <= 30.249298577074235
+       ---- weight = 31.975021496342066
 
-     -- x > 25.308590491676284
-       ---- weight = 73.86278296728283
+     -- x > 30.249298577074235
+       ---- weight = 92.95631061912857
 
-   -- x > 47.15309855518801
-     -- x <= 69.41410624111425
-       ---- weight = 122.75449154020971
+   -- x > 56.70727481650102
+     -- x <= 81.21987022108425
+       ---- weight = 144.01823139191634
 
-     -- x > 69.41410624111425
-       ---- weight = 173.777755053119
+     -- x > 81.21987022108425
+       ---- weight = 184.13145791780917
 ], LPDistLoss{2}(), :y)
 ````
 
@@ -265,38 +279,22 @@ iris.pred1 = predict(xgtree1, irisdisk)
 iris.pred2 = predict(xgtree2, irisdisk)
 
 # AUC
-AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])[1]
+AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
+
+# gini
+gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 
 # clean up
 rm("iris.jdf", force=true, recursive=true)
 ````
-## Why create JLBoost.jl when XGBoost.jl works perfectly fine?
-
-Indeed XGBoost.jl is greate and so are the Python and R incarnations of XGBoost. But something is amiss. I feel like I have to jump through hoops to get it to work. E.g. I have convert the data to matrix format, so I can't use dataframes directly, and it can't feal with CategoricalArrays directly and instead have to employ one hot encoding. LightGBM has interesting algorithms for deal with categorical features but they are not so easy to implement in XGBoost.jl as that's basicaly a C++ library.
-
-The journey that lead to create JLBoost.jl was an interesting one. When I was running the Sydney Julia meetup (SJM), I got an email from Adam, the creator of [JuML.jl](https://github.com/Statfactory/JuML.jl), and we discussed the possibility of giving a presentation at SJM. Adam mentioned that he created an XGBoost clone in Julia that was faster than the C++ XGBoost implementation. Hist implemnetaion was only about 500-600 lines of Julia and has a much smaller memory footprint. I was slightly skeptical as you can imagine. When I first came across XGBoost, I knew it as a C++ library. And because it had help win so many Kaggle competitions, I thought it must contain some highly advanced math that I won't really understand even though I have an honours degree in pure maths and a master degree in statistics. In other words, I was intimated by XGBoost. 
-
-But Adam made me curious. He mentioned that I should just read the XGBoost paper. So I did. Initially, I struggle, but soon everything fell into place. I can actually understand this! In fact, I can understand this well enough that I can [explain it to others](https://github.com/xiaodaigh/intro_r_data_science/blob/master/6b_XGBoost_theory_slide.rmd). And it isn't because I am super smart, it's because The boosting algorithm described in the XGBoost paper rquires some high school level algebra and  an understanding of basic calculus and Taylor series expansions, which are typically covered in first or second year of university.
-
-JuML.jl opened my eyes to the possibilities of Julia, but it only implemented the binary logistic case and it didn't work with DataFrames.jl. Beyond JuML.jl, But there was no pure-Julia implementation of the XGBoost algorithms. So I have this idea to implement JLBoost that layed dormant as I slogged away at my day time job as a consultant.
-
-Recently, I decided to finally give JLBoost a crack! And I was able to implement the basic XGBoost algorithms, use DataFrames.jl, allow on-disk fitting with `JDF.Files`, all in a few hundred lines of code!
-
-Doing JLBoost.jl in Julia makes the package more extensible. In fact, I can implement the Tabless.jl interface and allow any Tables.jl-compatible data structure to fit models using JLBoost! I can add support to any scalar target models easily without having to resort to C++. In fact, any sufficiently motivated Julia-programming can enjoy JLBoost.jl's boosting algorithm if they just implement `g` and `h` for their loss function! Neat!
-
-In conclusion, JLBoost.jl being pure-Julia makes the code base much smaller and easier to maintiain. It also makes it much more extensible then equivalent C++ implementations. It can work with Tables.jl data structure that JLBoost.jl doesn't know about.
 
 
-## Limitations for now
-* Currently, only the scalar-target models are supported. Multivariate-target models support are *planned*.
-* Currently, only the numeric and boolean features are supported. Categorical feature support are *planned*.
+
+
+
 
 ## Notes
 
 Currently has a CPU implementation of the `xgboost` binary boosting algorithm as described in the original paper. I am trying to implement the algorithms in the original `xgboost` paper. I want to implement the algorithms mentioned in LigthGBM and Catboost and to port them to GPUs.
 
-### Similar Projects
-
-[JuML.jl](https://github.com/Statfactory/JuML.jl)
-
-[AnyBoost.jl](https://github.com/rakeshvar/AnyBoost.jl)
+There is a similar project called [JuML.jl](https://github.com/Statfactory/JuML.jl).
