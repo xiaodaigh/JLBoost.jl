@@ -61,9 +61,13 @@ iris.pred2 = predict(xgtreemodel2, iris)
 iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
 ```
 
-There are also convenience functions for computing the AUC.
+There are also convenience functions for computing the AUC and gini
 ```julia
-AUC(-iris.pred1, iris.is_setosa)[1]
+AUC(-iris.pred1, iris.is_setosa)
+```
+
+```julia
+gini(-iris.pred1, iris.is_setosa)
 ```
 
 As a convenience feature, you can adjust the `eta` weight of each tree by multiplying it by a factor e.g.
@@ -127,7 +131,10 @@ iris.pred1 = predict(xgtree1, irisdisk)
 iris.pred2 = predict(xgtree2, irisdisk)
 
 # AUC
-AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])[1]
+AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
+
+# gini
+gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 
 # clean up
 rm("iris.jdf", force=true, recursive=true)
