@@ -232,22 +232,51 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 56.70727481650102
-     -- x <= 30.249298577074235
-       ---- weight = 31.975021496342066
+   -- x <= 44.019464380535744
+     -- x <= 19.470933882829165
+       ---- weight = 20.3884067681134
 
-     -- x > 30.249298577074235
-       ---- weight = 92.95631061912857
+     -- x > 19.470933882829165
+       ---- weight = 63.4661312890379
 
-   -- x > 56.70727481650102
-     -- x <= 81.21987022108425
-       ---- weight = 144.01823139191634
+   -- x > 44.019464380535744
+     -- x <= 69.2396797357558
+       ---- weight = 112.25580088095512
 
-     -- x > 81.21987022108425
-       ---- weight = 184.13145791780917
-], LPDistLoss{2}(), :y)
+     -- x > 69.2396797357558
+       ---- weight = 170.955907185772
+], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
+
+
+
+
+### Save & Load models
+You save the models using the `JLBoost.save` and load it with the `load` function
+
+````julia
+JLBoost.save(xgtreemodel, "model.jlb")
+JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+````
+
+
+
+````julia
+JLBoost.load("model.jlb")
+JLBoost.load("model_tree.jlb")
+````
+
+
+````
+Tree 1
+
+   -- PetalLength <= 1.9
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+````
 
 
 

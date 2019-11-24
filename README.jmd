@@ -104,6 +104,18 @@ loss = L2DistLoss()
 jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
 ```
 
+### Save & Load models
+You save the models using the `JLBoost.save` and load it with the `load` function
+
+```julia
+JLBoost.save(xgtreemodel, "model.jlb")
+JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+```
+
+```julia
+JLBoost.load("model.jlb")
+JLBoost.load("model_tree.jlb")
+```
 
 ### Fit model on `JDF.JDFFile` - enabling larger-than-RAM model fit
 Sometimes, you may want to fit a model on a dataset that is too large to fit into RAM. You can convert the dataset to [JDF format](https://github.com/xiaodaigh/JDF.jl) and then use `JDF.JDFFile` functionalities to fit the models. The interface `jlbosst` for `DataFrame` and `JDFFiLe` are the same.

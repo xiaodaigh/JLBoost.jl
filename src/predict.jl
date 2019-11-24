@@ -1,3 +1,5 @@
+import StatsBase: predict
+
 export predict
 
 predict(jlt::JLBoostTreeModel, df) = predict(trees(jlt), df)

@@ -1,3 +1,4 @@
+using Pkg; Pkg.activate(".")
 using JLBoost
 
 # const DATAPATH = joinpath(dirname(@__FILE__()), "..", "data")
