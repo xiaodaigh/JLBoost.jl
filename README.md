@@ -189,6 +189,49 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
+#### MLJ.jl integrations
+
+There is integration with the MLJ.jl modelling framework
+
+````julia
+using MLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+using MLJBase
+model = JLBoostModel()
+mljmodel = fit(model, 1, X, y)
+predict(model, mljmodel.fitresult, X)
+````
+
+
+````
+150-element Array{Float64,1}:
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  ⋮  
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+````
+
+
+
+
+
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
@@ -232,20 +275,20 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 44.019464380535744
-     -- x <= 19.470933882829165
-       ---- weight = 20.3884067681134
+   -- x <= 53.263645484322566
+     -- x <= 27.87339463727485
+       ---- weight = 29.79043118339558
 
-     -- x > 19.470933882829165
-       ---- weight = 63.4661312890379
+     -- x > 27.87339463727485
+       ---- weight = 87.12532927827377
 
-   -- x > 44.019464380535744
-     -- x <= 69.2396797357558
-       ---- weight = 112.25580088095512
+   -- x > 53.263645484322566
+     -- x <= 74.93823206293335
+       ---- weight = 131.17810036269614
 
-     -- x > 69.2396797357558
-       ---- weight = 170.955907185772
-], LossFunctions.LPDistLoss{2}(), :y)
+     -- x > 74.93823206293335
+       ---- weight = 176.90333229144503
+], LPDistLoss{2}(), :y)
 ````
 
 

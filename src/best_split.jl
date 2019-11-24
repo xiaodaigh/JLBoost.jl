@@ -3,7 +3,7 @@ using Statistics: mean
 
 export best_split
 
-function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false)
+function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
      if verbose
          println("Choosing a split on ", feature)
      end
@@ -11,7 +11,7 @@ function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::Abstra
      x = df[!, feature];
      target_vec = df[!, target];
 
-     split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose)
+     split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)
      (feature = feature, split_res...)
 end
 
