@@ -15,7 +15,7 @@ This is a 100%-Julia implementation of regression-tree-gradient-boosting algorit
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
 
-## Example
+## Quick-start
 
 ### Fit model on `DataFrame`
 
