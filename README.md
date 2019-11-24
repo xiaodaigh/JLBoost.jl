@@ -1,6 +1,6 @@
 # JLBoost.jl
 
-This is a 100%-Julia implementation of regression-tree-gradient-boosting algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
+This is a 100%-Julia implementation of Gradient Boosting Regression Trees (GBRT) algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decisiont Trees (GBDT)
 
 ## Limitations for now
 * Currently, only the scalar-target models are supported. Multivariate-target models support are *planned*.
