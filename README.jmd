@@ -5,6 +5,7 @@ This is a 100%-Julia implementation of regression-tree-gradient-boosting algorit
 ## Limitations for now
 * Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
 * Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
+* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 
 ## Objectives
 * A full-featured tree boosting library with fitting and inference support
@@ -140,7 +141,7 @@ JLBoost.load("model_tree.jlb")
 ### Fit model on `JDF.JDFFile` - enabling larger-than-RAM model fit
 Sometimes, you may want to fit a model on a dataset that is too large to fit into RAM. You can convert the dataset to [JDF format](https://github.com/xiaodaigh/JDF.jl) and then use `JDF.JDFFile` functionalities to fit the models. The interface `jlbosst` for `DataFrame` and `JDFFiLe` are the same.
 
-The key advantage of fitting a model using `JDF.JDFFile` is that not all the data need to be loaded into memory and hence will enable large models to be trained on a single computer.
+The key advantage of fitting a model using `JDF.JDFFile` is that not all the data need to be loaded into memory. This is because `JDF` can load the columns one at a time. Hence this will enable larger models to be trained on a single computer.
 
 ```julia
 using JLBoost, RDatasets, JDF
