@@ -32,9 +32,12 @@ include("g_h.jl")
 include("best_split.jl")
 include("fit_tree.jl")
 include("predict.jl")
+include("save.jl")
 include("jlboost-fit.jl")
 include("get-features.jl")
 include("feature-importance.jl")
+include("mlj.jl")
+
 
 
 # update the weight once so that it starts at a better point

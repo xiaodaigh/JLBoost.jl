@@ -12,6 +12,15 @@ target = :is_setosa
 
 features = setdiff(names(iris), [:Species, :is_setosa])
 
+using MLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+
+using MLJBase
+model = JLBoostModel()
+mljmodel = fit(model, 1, X, y)
+predict(model, mljmodel.fitresult, X)
+
 # fit one tree
 # ?jlboost for more details
 xgtreemodel = jlboost(iris, target)

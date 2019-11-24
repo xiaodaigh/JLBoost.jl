@@ -77,6 +77,20 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
+#### MLJ.jl integrations
+
+There is integration with the MLJ.jl modelling framework
+
+```julia
+using MLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+using MLJBase
+model = JLBoostModel()
+mljmodel = fit(model, 1, X, y)
+predict(model, mljmodel.fitresult, X)
+```
+
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
@@ -104,6 +118,18 @@ loss = L2DistLoss()
 jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
 ```
 
+### Save & Load models
+You save the models using the `JLBoost.save` and load it with the `load` function
+
+```julia
+JLBoost.save(xgtreemodel, "model.jlb")
+JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+```
+
+```julia
+JLBoost.load("model.jlb")
+JLBoost.load("model_tree.jlb")
+```
 
 ### Fit model on `JDF.JDFFile` - enabling larger-than-RAM model fit
 Sometimes, you may want to fit a model on a dataset that is too large to fit into RAM. You can convert the dataset to [JDF format](https://github.com/xiaodaigh/JDF.jl) and then use `JDF.JDFFile` functionalities to fit the models. The interface `jlbosst` for `DataFrame` and `JDFFiLe` are the same.

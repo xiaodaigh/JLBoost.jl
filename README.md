@@ -189,6 +189,49 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
+#### MLJ.jl integrations
+
+There is integration with the MLJ.jl modelling framework
+
+````julia
+using MLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+using MLJBase
+model = JLBoostModel()
+mljmodel = fit(model, 1, X, y)
+predict(model, mljmodel.fitresult, X)
+````
+
+
+````
+150-element Array{Float64,1}:
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  2.0
+  ⋮  
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+ -2.0
+````
+
+
+
+
+
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
@@ -232,22 +275,51 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 56.70727481650102
-     -- x <= 30.249298577074235
-       ---- weight = 31.975021496342066
+   -- x <= 53.263645484322566
+     -- x <= 27.87339463727485
+       ---- weight = 29.79043118339558
 
-     -- x > 30.249298577074235
-       ---- weight = 92.95631061912857
+     -- x > 27.87339463727485
+       ---- weight = 87.12532927827377
 
-   -- x > 56.70727481650102
-     -- x <= 81.21987022108425
-       ---- weight = 144.01823139191634
+   -- x > 53.263645484322566
+     -- x <= 74.93823206293335
+       ---- weight = 131.17810036269614
 
-     -- x > 81.21987022108425
-       ---- weight = 184.13145791780917
+     -- x > 74.93823206293335
+       ---- weight = 176.90333229144503
 ], LPDistLoss{2}(), :y)
 ````
 
+
+
+
+
+### Save & Load models
+You save the models using the `JLBoost.save` and load it with the `load` function
+
+````julia
+JLBoost.save(xgtreemodel, "model.jlb")
+JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+````
+
+
+
+````julia
+JLBoost.load("model.jlb")
+JLBoost.load("model_tree.jlb")
+````
+
+
+````
+Tree 1
+
+   -- PetalLength <= 1.9
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+````
 
 
 
