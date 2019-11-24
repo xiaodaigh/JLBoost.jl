@@ -38,8 +38,14 @@ xgtreemodel = jlboost(iris, target)
 The returned model contains a vector of trees and the loss function and target
 
 ```julia
-typeof(trees(xgtreemodel)) # Array{JLBoostTree,1}
+typeof(trees(xgtreemodel))
+```
+
+```julia
 typeof(xgtreemodel.loss)
+```
+
+```julia
 typeof(xgtreemodel.target)
 ```
 
@@ -91,11 +97,11 @@ warm_start = fill(0.0, nrow(df))
 
 using LossFunctions: L2DistLoss
 loss = L2DistLoss()
-jlboost(df, target, features, warm_start, loss)
+jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
 ```
 
 
-### Fit model on `JDF.JDFFile`
+### Fit model on `JDF.JDFFile` - enabling larger-than-RAM model fit
 Sometimes, you may want to fit a model on a dataset that is too large to fit into RAM. You can convert the dataset to [JDF format](https://github.com/xiaodaigh/JDF.jl) and then use `JDF.JDFFile` functionalities to fit the models. The interface `jlbosst` for `DataFrame` and `JDFFiLe` are the same.
 
 The key advantage of fitting a model using `JDF.JDFFile` is that not all the data need to be loaded into memory and hence will enable large models to be trained on a single computer.
