@@ -7,6 +7,7 @@ This is a 100%-Julia implementation of Gradient Boosting Regression Trees (GBRT)
 * Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
+* A batteries-included approach
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
 
