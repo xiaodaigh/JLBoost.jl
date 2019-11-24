@@ -5,6 +5,7 @@ This is a 100%-Julia implementation of regression-tree-gradient-boosting algorit
 ## Limitations for now
 * Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
 * Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
+* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 
 ## Objectives
 * A full-featured tree boosting library with fitting and inference support
