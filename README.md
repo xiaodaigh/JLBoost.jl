@@ -274,16 +274,12 @@ AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])[1]
 rm("iris.jdf", force=true, recursive=true)
 ````
 
-
-
-
-
-
 ## Notes
 
 Currently has a CPU implementation of the `xgboost` binary boosting algorithm as described in the original paper. I am trying to implement the algorithms in the original `xgboost` paper. I want to implement the algorithms mentioned in LigthGBM and Catboost and to port them to GPUs.
 
 ### Similar Projects
 
-[JuML.jl](https://github.com/Statfactory/JuML.jl).
+[JuML.jl](https://github.com/Statfactory/JuML.jl)
+
 [AnyBoost.jl](https://github.com/rakeshvar/AnyBoost.jl)
