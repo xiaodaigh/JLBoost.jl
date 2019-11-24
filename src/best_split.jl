@@ -39,7 +39,7 @@ end
 
 Assume that f, t, p are iterable and that they are sorted. Intended for advance users only
 """
-function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; verbose = false)
+function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
 	cg = cumsum(g.(loss, target, warmstart))
     ch = cumsum(h.(loss, target, warmstart))
 
@@ -56,12 +56,8 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
     	no_split = max_cg^2 /(max_ch + lambda)
     	gain = no_split - gamma
     	cutpt = 0
-    	# lweight = -1.0
-    	# rweight = -1.0
     	lweight = -cg[end]/(ch[end]+lambda)
     	rweight = -cg[end]/(ch[end]+lambda)
-    	# lweight = typemin(eltype(feature))
-    	# rweight = typemin(eltype(feature))
 	else
 		for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
 			if f != last_feature
@@ -80,18 +76,25 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
 		end
 	end
 
-    split_at = feature[1]
+	# set the split at the point at the end
+    split_at = feature[end]
+
+	# the child weight is the hessian
     if cutpt >= 1
     	split_at = feature[cutpt]
+		if ch[cutpt] < min_child_weight
+			# the weight is less than child weight; do not split further
+			split_at = feature[end]
+			cutpt = 0
+			no_split = max_cg^2 /(max_ch + lambda)
+	    	gain = no_split - gamma
+	    	cutpt = 0
+	    	lweight = -cg[end]/(ch[end]+lambda)
+	    	rweight = -cg[end]/(ch[end]+lambda)
+		end
     end
 
     (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
-
-	# the other way will saturdate the moves
-	# lw = sum(@view(target[1:cutpt]))/cutpt
-	# rw = sum(@view(target[cutpt+1:end]))/(length(target) - cutpt)
-	#
-	# (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = log(lw/(1-lw)) - mean(@view(warmstart[1:cutpt])) , rweight = log(rw/(1-rw))- mean(@view(warmstart[cutpt+1:end])))
 end
 
 # TODO more reseach into GPU friendliness

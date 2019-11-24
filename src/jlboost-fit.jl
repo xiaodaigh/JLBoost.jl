@@ -17,9 +17,11 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 * subsample: 0-1, the proportion of rows to subsample for each tree build
 * verbose: Print more information
 * colsample_bytree: (0-1] The proportion of feature column to sample for each tree. This
-* min_child_weight: Not yet implemented
+* min_child_weight: The weight that needs to be in each child node before a split can occur. The weight is the hessian (2nd derivative) of the loss function, which happens to be 1 for squares loss.
 * colsample_bylevel: Not yet implemented
 * colsample_bynode: Not yet implemented
+* monotone_contraints: Not yet implemented
+* interaction_constraints: Not yet implemented
 """
 function jlboost(df, target::Symbol; kwargs...)
 	jlboost(df, target, setdiff(names(df), [target]), fill(0.0, nrow(df)); kwargs...)
@@ -35,8 +37,8 @@ end
 
 function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector, loss = LogitLogLoss();
 	nrounds = 1, subsample = 1, eta = 1, verbose =false, colsample_bytree = 1, kwargs...)
-	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1,
-	#, colsample_bylevel = 1,  colsample_bynode = 1,
+	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
+	#, ,  colsample_bynode = 1,
 
 	@assert nrounds >= 1
 	@assert subsample <= 1 && subsample > 0
