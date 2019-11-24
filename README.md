@@ -199,7 +199,48 @@ X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 using MLJBase
 model = JLBoostModel()
+````
+
+
+````
+JLBoostModel(loss = LogitLogLoss(),
+             nrounds = 1,
+             subsample = 1,
+             eta = 1,
+             max_depth = 6,
+             min_child_weight = 1,
+             lambda = 0,
+             gamma = 0,
+             colsample_bytree = 1,) @ 1…10
+````
+
+
+
+````julia
 mljmodel = fit(model, 1, X, y)
+````
+
+
+````
+(fitresult = JLBoostTreeModel(JLBoostTree[
+   -- PetalLength <= 1.9
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+], LogitLogLoss(), :__y__),
+ cache = nothing,
+ report = (AUC = 0.16666666666666669,
+           feature_importance = 1×4 DataFrame
+│ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
+│     │ Symbol      │ Float64      │ Float64  │ Float64   │
+├─────┼─────────────┼──────────────┼──────────┼───────────┤
+│ 1   │ PetalLength │ 1.0          │ 1.0      │ 1.0       │,),)
+````
+
+
+
+````julia
 predict(model, mljmodel.fitresult, X)
 ````
 
@@ -275,19 +316,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 53.263645484322566
-     -- x <= 27.87339463727485
-       ---- weight = 29.79043118339558
+   -- x <= 52.75650821919835
+     -- x <= 30.474782020841708
+       ---- weight = 35.921372504935796
 
-     -- x > 27.87339463727485
-       ---- weight = 87.12532927827377
+     -- x > 30.474782020841708
+       ---- weight = 88.19443020839888
 
-   -- x > 53.263645484322566
-     -- x <= 74.93823206293335
-       ---- weight = 131.17810036269614
+   -- x > 52.75650821919835
+     -- x <= 76.75911757247917
+       ---- weight = 132.9609063284334
 
-     -- x > 74.93823206293335
-       ---- weight = 176.90333229144503
+     -- x > 76.75911757247917
+       ---- weight = 178.06206094694943
 ], LPDistLoss{2}(), :y)
 ````
 
