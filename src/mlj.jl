@@ -3,6 +3,7 @@ export fit, predict, fitted_params, JLBoostModel
 #using MLJBase
 import MLJBase: Deterministic, clean!, fit, predict, fitted_params, load_path
 import MLJBase: package_name, package_uuid, package_url, is_pure_julia, package_license
+import MLJBase: input_scitype, target_scitype
 using DataFrames: DataFrame
 
 
@@ -83,6 +84,10 @@ fitted_params(model::JLBoostModel, fitresult) = (fitresult = fitresult, trees = 
 predict(model::JLBoostModel, fitresult, Xnew) = begin
     predict(fitresult, Xnew)
 end
+
+# see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/#Trait-declarations-1
+input_scitype(::Type{<:JLBoostModel}) = Table(Union{Continuous, OrderedFactor, Count})
+target_scitype(::Type{<:JLBoostModel}) = AbstractVector{<:Union{Continuous, MultiClass{2}, Count, OrderedFactor}}
 
 # Misc see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/
 load_path(::Type{JLBoostModel}) = ""
