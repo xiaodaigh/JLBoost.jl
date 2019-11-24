@@ -3,7 +3,7 @@
 This is a 100%-Julia implementation of Gradient Boosting Regression Trees (GBRT) algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decisiont Trees (GBDT)
 
 ## Objectives
-* A full-featured gradient boosting regression tree package with model fit and inference support
+* A full-featured Gradient Boosting Regression Tree package with model fit and inference support
 * Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
