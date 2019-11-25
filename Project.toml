@@ -1,7 +1,7 @@
 name = "JLBoost"
 uuid = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
 authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"

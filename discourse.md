@@ -1,27 +1,39 @@
-You can fit Decisions with [JLBoost.jl](https://github.com/xiaodaigh/JLBoost.jl) which has implemented the gradient-boosting regression method in the originla XGBoost paper. It's an 100%-Julia implementation.
+
+You can fit Gradient Boosting Regression (Decision) Trees with [JLBoost.jl](https://github.com/xiaodaigh/JLBoost.jl) which has implemented the gradient-boosting regression method found in the original XGBoost paper. It's an 100%-Julia implementation.
+
+XGBoost is one of the most popular and important machine learning libraries for tabular data.
 
 **So why create JLBoost.jl when XGBoost.jl?**
 
-1) Play nice with the Julia ecosystem like DataFrames.jl and (soon) CategoricalArrays.jl
-2) Demonstrate how a 100%-Julia implementation is superior in terms of maintainability and extensibility
-3) Why not?
+Why I created JLBoost: in short, because I am kinda greedy.
 
-The model is at MVP (minimal viable product) stage and not MLP (minimum lovable product) stage. So lots of features are missing. But it's working quite well for simple regression tasks! Please try it out and submit issues!
+But the question is pertinent especially because XGBoost.jl works pretty well. Indeed XGBoost.jl is great and so are the Python and R incarnations of XGBoost.
+
+But when I use them, I feel something is amiss. I feel like I have to jump through hoops to get it to work. E.g. I have convert the data to matrix format, so I can't use DataFrames directly, and it can't deal with CategoricalArrays directly and instead have to employ one hot encoding. LightGBM has interesting algorithms
+for dealing with categorical features but they are not so easy to implement in XGBoost.jl as that's basically a C++ library.
 
 ## The journey to JLBoost.jl
-Indeed XGBoost.jl is great and so are the Python and R incarnations of XGBoost. But something is amiss. I feel like I have to jump through hoops to get it to work. E.g. I have convert the data to matrix format, so I can't use dataframes directly, and it can't feal with CategoricalArrays directly and instead have to employ one hot encoding. LightGBM has interesting algorithms for deal with categorical features but they are not so easy to implement in XGBoost.jl as that's basicaly a C++ library.
 
-The journey that lead to create JLBoost.jl was an interesting one. When I was running the Sydney Julia meetup (SJM), I got an email from Adam, the creator of JuML.jl, and we discussed the possibility of giving a presentation at SJM. Adam mentioned that he created an XGBoost clone in Julia that was faster than the C++ XGBoost implementation. Hist implemnetaion was only about 500-600 lines of Julia and has a much smaller memory footprint. I was slightly skeptical as you can imagine. When I first came across XGBoost, I knew it as a C++ library. And because it had help win so many Kaggle competitions, I thought it must contain some highly advanced math that I won't really understand even though I have an honours degree in pure maths and a master degree in statistics. In other words, I was intimated by XGBoost.
+Why don't I just make a 100%-Julia library of the boosting algorithm so that I can implement all of those nice algorithms in XGBoost, LightGBM, and Catboost? This will be a big project but if it can be achieved, the best bet in Julia.
 
-But Adam made me curious. He mentioned that I should just read the XGBoost paper. So I did. Initially, I struggle, but soon everything fell into place. I can actually understand this! In fact, I can understand this well enough that I can explain it to others. And it isn't because I am super smart, it's because The boosting algorithm described in the XGBoost paper rquires some high school level algebra and an understanding of basic calculus and Taylor series expansions, which are typically covered in first or second year of university.
+The journey that lead me to create JLBoost.jl is an interesting one. When I was running the Sydney Julia meetup (SJM), I got an email from Adam, the creator of JuML.jl, and we discussed the possibility of giving a presentation at SJM. Adam mentioned that he created an XGBoost clone in Julia that was faster than the C++ XGBoost implementation. His implemnetaion was only about 500-600 lines of Julia and has a much smaller memory footprint. I was intrigued! When I first came across XGBoost, I knew it as a C++ library. And because it had help win so many Kaggle competitions, I thought it must contain some highly advanced math that I won't really understand. I have an honours degree in pure maths and a master degree in statistics, and in my imagination, it would contain math that was beyond that level. In other words, I was intimated by XGBoost.
 
-JuML.jl opened my eyes to the possibilities of Julia, but it only implemented the binary logistic case and it didn't work with DataFrames.jl. Beyond JuML.jl, But there was no pure-Julia implementation of the XGBoost algorithms. So I have this idea to implement JLBoost that layed dormant as I slogged away at my day time job as a consultant.
+But Adam made me curious. He mentioned that I should just read the XGBoost paper. So I did. Initially, I struggled, but soon everything fell into place. I can actually understand this! In fact, I can understand this well enough to explain it to others. And it isn't because I am super smart, it's because The boosting algorithm described in the XGBoost paper on required some high school level algebra and an understanding of basic calculus and Taylor series expansions, which are typically covered in first or second year of university. I was no longer intimated.
+
+Although, JuML.jl opened my eyes to the possibilities of Julia, it had only implemented the binary logistic case and it didn't work with DataFrames.jl and instead pioneered its dataframes format. This was something I wanted to improve. Beyond JuML.jl, But there was no pure-Julia implementation of the XGBoost algorithms. So an idea started to ferment in my head - perhaps, I should implement something like JLBoost.jl in 100%-Julia. But idea layed dormant as I slogged away at my day-job as a consultant.
 
 Recently, I decided to finally give JLBoost a crack! And I was able to implement the basic XGBoost algorithms, use DataFrames.jl, allow on-disk fitting with JDF.Files, all in a few hundred lines of code!
 
 Doing JLBoost.jl in Julia makes the package more extensible. In fact, I can implement the Tabless.jl interface and allow any Tables.jl-compatible data structure to fit models using JLBoost! I can add support to any scalar target models easily without having to resort to C++. In fact, any sufficiently motivated Julia-programming can enjoy JLBoost.jl's boosting algorithm if they just implement g and h for their loss function! Neat!
 
 In conclusion, JLBoost.jl being pure-Julia makes the code base much smaller and easier to maintiain. It also makes it much more extensible then equivalent C++ implementations. It can work with Tables.jl data structure that JLBoost.jl doesn't know about.
+
+##
+1) Play nice with the Julia ecosystem like DataFrames.jl and (soon) CategoricalArrays.jl
+2) Demonstrate how a 100%-Julia implementation is superior in terms of maintainability and extensibility
+3) Why not?
+
+The model is at MVP (minimal viable product) stage and not MLP (minimum lovable product) stage. So lots of features are missing. But it's working quite well for simple regression tasks! Please try it out and submit issues!
 
 
 ## Quick-start
