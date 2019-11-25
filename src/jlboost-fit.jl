@@ -1,5 +1,7 @@
 export jlboost!, jlboost
 
+using Tables
+
 """
 	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)), warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
 
@@ -43,6 +45,10 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	@assert nrounds >= 1
 	@assert subsample <= 1 && subsample > 0
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
+	@assert Tables.istable(df)
+
+	dfc = Tables.columns(df)
+
 
 	res_jlt = Vector{JLBoostTree}(undef, nrounds)
 	for i in 1:nrounds
@@ -61,7 +67,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	else
 		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
 		warm_start = fill(0.0, length(rows))
-		new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 	end
 	res_jlt[1] = deepcopy(new_jlt);
 
@@ -82,9 +88,9 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 		else
 			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-			warm_start = predict(res_jlt[1:nrounds-1], @view(df[rows, :]))
+			warm_start = predict(res_jlt[1:nrounds-1], view(dfc, rows, :))
 
-			new_jlt = _fit_tree!(loss, @view(df[rows, :]), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
 		end
 	    res_jlt[nround] = deepcopy(new_jlt)
 	end

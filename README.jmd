@@ -1,22 +1,22 @@
 # JLBoost.jl
 
-This is a 100%-Julia implementation of regression-tree-gradient-boosting algorithm based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers.
+This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT) based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decision Tree (GBDT).
 
 ## Limitations for now
+* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 * Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
 * Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
-* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 
 ## Objectives
 * A full-featured & batteries included Gradient Boosting Regression Tree library
-* Play nice with the Julia ecosystem e.g. DataFrames.jl and CategoricalArrays.jl
+* Play nice with the Julia ecosystem e.g. Tables.jl, DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
 
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
 
-## Example
+## Quick-start
 
 ### Fit model on `DataFrame`
 
@@ -79,7 +79,7 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
-#### MLJ.jl integrations
+#### MLJ.jl & Tables.jl integrations
 
 There is integration with the MLJ.jl modelling framework
 
@@ -104,6 +104,16 @@ One can obtain the feature importance using the `feature_importance` function
 
 ```julia
 feature_importance(xgtreemodel, iris)
+```
+
+##### Tables.jl
+
+The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However you need to have these additional methods defined for the table `df`
+
+```julia; eval = false
+nrow(df) # returns the number of rows
+ncol(df)
+view(df, rows, cols)
 ```
 
 #### Regression Model

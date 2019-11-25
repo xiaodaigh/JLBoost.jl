@@ -4,7 +4,6 @@ Pkg.activate(".")
 @time using JDF
 @time using JLBoost, LossFunctions
 
-
 ###############################################################################
 # testing best_split
 ###############################################################################
@@ -18,10 +17,19 @@ verbose = false
 lambda = 0
 gamma = 0
 
-using MLJ
-
-treem = jlboost(a, target, feats)
+treem = jlboost(a, target, features)
 
 predict(treem, a)
 get_features(treem)
 feature_importance(treem, a)
+
+using MLJ
+
+model = JLBoostModel()
+
+X, y = unpack(a, !=(:SeriousDlqin2yrs), ==(:SeriousDlqin2yrs))
+
+mljmodel = fit(model, 0, X, y)
+predict(model, mljmodel.fitresult, X)
+
+fitted_params(model, mljmodel.fitresult)

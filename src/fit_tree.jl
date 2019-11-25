@@ -1,5 +1,7 @@
 export fit_tree!, fit_tree
 
+using Tables
+
 """
 	_fit_tree(loss, df, target, features, warm_start, leaf_queue
 
@@ -12,6 +14,7 @@ function _fit_tree!(loss, df, target, features, warm_start, feature_choice_strat
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
 	@assert colsample_bynode <= 1 && colsample_bynode > 0
 	@assert colsample_bylevel <= 1 && colsample_bylevel > 0
+	@assert Tables.istable(df)
 
 	# compute the gain for all splits for all features
 	split_with_best_gain = best_split(loss, df, features[1], target, warm_start, lambda, gamma; verbose=verbose, kwargs...)
@@ -38,11 +41,12 @@ function _fit_tree!(loss, df, target, features, warm_start, feature_choice_strat
 	    jlt.children = [left_treenode, right_treenode]
 
 	    if max_depth > 1
+			dfc = Tables.columns(df)
 		 	 # now recursively apply the weights to left branch and right branch
-			 left_bool = df[!, split_with_best_gain.feature] .<= split_with_best_gain.split_at
-			 right_bool = df[!, split_with_best_gain.feature] .> split_with_best_gain.split_at
-		 	 df_left = @view(df[left_bool,:])
-		 	 df_right = @view(df[right_bool, :])
+			 left_bool = getproperty(dfc, split_with_best_gain.feature) .<= split_with_best_gain.split_at
+			 right_bool = getproperty(dfc, split_with_best_gain.feature) .> split_with_best_gain.split_at
+		 	 df_left = view(dfc, left_bool, :)
+		 	 df_right = view(dfc, right_bool, :)
 			 warm_start_left = @view(warm_start[left_bool])
 			 warm_start_right = @view(warm_start[right_bool])
 		 	 left_treenode  = _fit_tree!(loss, df_left,  target, features, warm_start_left, nothing, left_treenode ;  lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)

@@ -1,18 +1,23 @@
 #using CuArrays
 using Statistics: mean
+using Tables
 
 export best_split
 
 function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
-     if verbose
-         println("Choosing a split on ", feature)
-     end
+	 @assert Tables.istable(df)
 
-     x = df[!, feature];
-     target_vec = df[!, target];
+	 if verbose
+	     println("Choosing a split on ", feature)
+	 end
 
-     split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)
-     (feature = feature, split_res...)
+	 dfc = Tables.columns(df)
+
+	 x = getproperty(dfc, feature)
+	 target_vec = getproperty(dfc, target);
+
+	 split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)
+	 (feature = feature, split_res...)
 end
 
 
@@ -26,6 +31,7 @@ Does not assume that Feature, target, and warmstart sorted and will sort them fo
 function best_split(loss, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
 	@assert length(feature) == length(target)
 	@assert length(feature) == length(warmstart)
+	
     if issorted(feature)
         res = _best_split(loss, feature, target, warmstart, lambda, gamma; kwargs...)
     else
