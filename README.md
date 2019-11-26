@@ -6,7 +6,6 @@ This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT
 * Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 * Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
 * Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
-* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
 
 ## Objectives
 * A full-featured & batteries included Gradient Boosting Regression Tree library
@@ -40,13 +39,13 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -61,7 +60,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{JLBoostTree,1}
+Array{JLBoost.JLBoostTrees.JLBoostTree,1}
 ````
 
 
@@ -72,7 +71,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-LogitLogLoss
+JLBoost.LogitLogLoss
 ````
 
 
@@ -97,7 +96,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
@@ -117,7 +116,7 @@ JLBoostTreeModel(JLBoostTree[
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -206,15 +205,15 @@ model = JLBoostModel()
 
 
 ````
-JLBoostModel(loss = LogitLogLoss(),
-             nrounds = 1,
-             subsample = 1,
-             eta = 1,
-             max_depth = 6,
-             min_child_weight = 1,
-             lambda = 0,
-             gamma = 0,
-             colsample_bytree = 1,) @ 1…00
+JLBoost.JLBoostModel(loss = JLBoost.LogitLogLoss(),
+                     nrounds = 1,
+                     subsample = 1,
+                     eta = 1,
+                     max_depth = 6,
+                     min_child_weight = 1,
+                     lambda = 0,
+                     gamma = 0,
+                     colsample_bytree = 1,) @ 1…29
 ````
 
 
@@ -225,16 +224,17 @@ mljmodel = fit(model, 1, X, y)
 
 
 ````
-(fitresult = JLBoostTreeModel(JLBoostTree[
+(fitresult = JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLB
+oostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :__y__),
+], JLBoost.LogitLogLoss(), :__y__),
  cache = nothing,
  report = (AUC = 0.16666666666666669,
-           feature_importance = 1×4 DataFrame
+           feature_importance = 1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -285,7 +285,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrame
+1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -332,21 +332,21 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
-   -- x <= 52.304159712460915
-     -- x <= 28.16389447861365
-       ---- weight = 28.848011412893065
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
+   -- x <= 50.941863967107736
+     -- x <= 28.9185295450848
+       ---- weight = 33.80060558081096
 
-     -- x > 28.16389447861365
-       ---- weight = 86.92711822584722
+     -- x > 28.9185295450848
+       ---- weight = 84.72585647961226
 
-   -- x > 52.304159712460915
-     -- x <= 78.51511683627884
-       ---- weight = 138.91967046739418
+   -- x > 50.941863967107736
+     -- x <= 80.85340725613683
+       ---- weight = 142.11806109470956
 
-     -- x > 78.51511683627884
-       ---- weight = 179.890460366333
-], LPDistLoss{2}(), :y)
+     -- x > 80.85340725613683
+       ---- weight = 188.61227190669018
+], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
 

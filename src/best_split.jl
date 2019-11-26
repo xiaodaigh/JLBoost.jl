@@ -31,7 +31,7 @@ Does not assume that Feature, target, and warmstart sorted and will sort them fo
 function best_split(loss, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
 	@assert length(feature) == length(target)
 	@assert length(feature) == length(warmstart)
-	
+
     if issorted(feature)
         res = _best_split(loss, feature, target, warmstart, lambda, gamma; kwargs...)
     else
@@ -46,6 +46,10 @@ end
 Assume that f, t, p are iterable and that they are sorted. Intended for advance users only
 """
 function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
+	@assert length(feature) >= 2
+	@assert length(target) == length(feature)
+	@assert length(warmstart) == length(feature)
+
 	cg = cumsum(g.(loss, target, warmstart))
     ch = cumsum(h.(loss, target, warmstart))
 
@@ -58,29 +62,29 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
     rweight::Float64 = 0.0
     best_gain::Float64 = typemin(Float64)
 
-    if length(feature) == 1
-    	no_split = max_cg^2 /(max_ch + lambda)
-    	gain = no_split - gamma
-    	cutpt = 0
-    	lweight = -cg[end]/(ch[end]+lambda)
-    	rweight = -cg[end]/(ch[end]+lambda)
-	else
-		for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
-			if f != last_feature
-				left_split = cg^2 /(ch + lambda)
-				right_split = (max_cg-cg)^(2) / ((max_ch - ch) + lambda)
-				no_split = max_cg^2 /(max_ch + lambda)
-				gain = left_split +  right_split - no_split - gamma
-				if gain > best_gain
-					best_gain = gain
-					cutpt = i
-					lweight = -cg/(ch+lambda)
-					rweight = -(max_cg - cg)/(max_ch - ch + lambda)
-				end
-				last_feature = f
+    # if length(feature) == 1
+    # 	no_split = max_cg^2 /(max_ch + lambda)
+    # 	gain = no_split - gamma
+    # 	cutpt = 0
+    # 	lweight = -cg[end]/(ch[end]+lambda)
+    # 	rweight = -cg[end]/(ch[end]+lambda)
+	# else
+	for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
+		if f != last_feature
+			left_split = cg^2 /(ch + lambda)
+			right_split = (max_cg-cg)^(2) / ((max_ch - ch) + lambda)
+			no_split = max_cg^2 /(max_ch + lambda)
+			gain = left_split +  right_split - no_split - gamma
+			if gain > best_gain
+				best_gain = gain
+				cutpt = i
+				lweight = -cg/(ch+lambda)
+				rweight = -(max_cg - cg)/(max_ch - ch + lambda)
 			end
+			last_feature = f
 		end
 	end
+	# end
 
 	# set the split at the point at the end
     split_at = feature[end]

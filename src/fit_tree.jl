@@ -44,13 +44,21 @@ function _fit_tree!(loss, df, target, features, warm_start, feature_choice_strat
 			dfc = Tables.columns(df)
 		 	 # now recursively apply the weights to left branch and right branch
 			 left_bool = getproperty(dfc, split_with_best_gain.feature) .<= split_with_best_gain.split_at
+			 # need at least two to consider a split
+			 if sum(left_bool) > 1
+			 	df_left = view(dfc, left_bool, :)
+			 	warm_start_left = @view(warm_start[left_bool])
+				# this will grow the left_treenode
+			 	_fit_tree!(loss, df_left,  target, features, warm_start_left, nothing, left_treenode;  lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
+			end
+
 			 right_bool = getproperty(dfc, split_with_best_gain.feature) .> split_with_best_gain.split_at
-		 	 df_left = view(dfc, left_bool, :)
-		 	 df_right = view(dfc, right_bool, :)
-			 warm_start_left = @view(warm_start[left_bool])
-			 warm_start_right = @view(warm_start[right_bool])
-		 	 left_treenode  = _fit_tree!(loss, df_left,  target, features, warm_start_left, nothing, left_treenode ;  lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
-		 	 right_treenode = _fit_tree!(loss, df_right, target, features, warm_start_right, nothing, right_treenode; lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
+			 if sum(right_bool) > 1
+		 	 	df_right = view(dfc, right_bool, :)
+			 	warm_start_right = @view(warm_start[right_bool])
+				# this will grow the right_treenode
+		 	 	_fit_tree!(loss, df_right, target, features, warm_start_right, nothing, right_treenode; lambda = lambda, gamma = gamma, max_depth = max_depth - 1, verbose = verbose)
+			end
 	     end
 	end
  	jlt
