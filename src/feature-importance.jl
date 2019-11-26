@@ -1,5 +1,7 @@
 export feature_importance
 
+using DataFrames: DataFrame
+
 """
     feature_importance(jlt::JLBoostTree, df, loss, target)
     feature_importance(jlt::JLBoostTreeModel, df)

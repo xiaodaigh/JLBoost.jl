@@ -3,7 +3,7 @@ Pkg.activate(".")
 @time using JLBoost
 @time using DataFrames
 @time using JDF, LossFunctions
-
+using DataConvenience: replace_onehot!
 
 ###############################################################################
 # testing best_split
@@ -23,62 +23,6 @@ replace_onehot!(a, :Gender)
 
 @time m = jlboost(a, :Exited, setdiff(names(a), [:Exited, :hist_mthly_profit]))
 feature_importance(m, a)
-
-using TableView
-showtable(a)
-
-using BenchmarkTools
-
-
-
-a[!, :dummy] .= 1
-a[!, :row_id] .= 1:nrow(a)
-
-unstack(a[!, [:row_id, :Geography, :dummy]], :Geography, :dummy)
-
-x = a[!, :Geography]
-
-a[!, :Geography] = categorical(a[!, :Geography])
-
-using Flux: onehotbatch
-using DataAPI: refarray, refvalue, defaultarray, refpool
-
-x = a[!, :Geography]
-x.refs
-x.pool.index
-fieldnames(typeof(x.pool))
-
-xx = onehotbatch(x.refs, 1:length(x.pool.index))
-
-a[!, :Geography_Germany] = xx[1, :]
-
-
-
-(a[!, :Geography])
-refarray(a[!, :Geography])
-refvalue(a[!, :Geography])
-
-refpool(a[!, :Geography])
-
-@time treem = jlboost(a, :Exited, [:Age])
-
-@time treem2 = jlboost(a, :Exited, [:CreditScore], predict(treem, a))
-
-treem3 = treem + treem2
-
-
-AUC(-predict(treem, a), a.Exited)
-
-AUC(-predict(treem2, a), a.Exited)
-
-AUC(-predict(treem3, a), a.Exited)
-
-
-@time treem = jlboost(a, :Exited, [:Age, :CreditScore])
-
-predict(treem, a)
-get_features(treem)
-feature_importance(treem, a)
 
 if false # for debuggin
     jlt = trees(treem)[1]

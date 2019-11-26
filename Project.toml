@@ -4,7 +4,7 @@ authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
 version = "0.1.1"
 
 [deps]
-JDF = "babc3d20-cd49-4f60-a736-a8f9c08892d3"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 LossFunctions = "30fc2ffe-d236-52d8-8643-a9d8f7c094a7"
 MLJBase = "a7f614a8-145f-11e9-1d2a-a57a1082229d"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
@@ -15,7 +15,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [compat]
-JDF = "^0.2.8"
+DataFrames = "0.19"
 LossFunctions = "0.5"
 MLJBase = "0.8"
 Missings = "0.4"

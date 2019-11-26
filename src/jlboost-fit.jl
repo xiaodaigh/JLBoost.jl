@@ -1,5 +1,6 @@
 export jlboost!, jlboost
 
+using DataFrames: nrow, ncol
 using Tables
 
 """
