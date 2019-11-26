@@ -4,8 +4,6 @@ export fit, predict, fitted_params, JLBoostModel
 import MLJBase: Deterministic, clean!, fit, predict, fitted_params, load_path
 import MLJBase: package_name, package_uuid, package_url, is_pure_julia, package_license
 import MLJBase: input_scitype, target_scitype
-using DataFrames: DataFrame
-
 
 # supervised determinstinistic model
 mutable struct JLBoostModel <: Deterministic

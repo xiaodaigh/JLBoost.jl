@@ -1,8 +1,9 @@
 using Pkg
 Pkg.activate(".")
+@time using JLBoost
 @time using DataFrames
-@time using JDF
-@time using JLBoost, LossFunctions
+@time using JDF, LossFunctions
+
 
 ###############################################################################
 # testing best_split
@@ -12,8 +13,6 @@ if !isdir("c:/data/Churn_Modelling_fnl_w_profit.jdf")
     a = CSV.read("c:/data/Churn_Modelling_fnl_w_profit.csv")
     savejdf(a, "c:/data/Churn_Modelling_fnl_w_profit.jdf")
 end
-
-
 
 @time a = loadjdf("c:/data/Churn_Modelling_fnl_w_profit.jdf")
 a[!, :Geography] = categorical(a[!, :Geography])

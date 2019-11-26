@@ -1,6 +1,5 @@
 module JLBoostTrees
 
-using DataFrames
 import Base: show, *, print, println, +
 
 export JLBoostTree, JLBoostTreeModel, show, trees
