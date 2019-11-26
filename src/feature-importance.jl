@@ -74,7 +74,8 @@ feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, n
         H_right = sum(@view(Hs[rows_bool_right]))
 
         # note that hyper parameters are not used to compute the gain
-        gain = G_left^2/H_left + G_right^2/H_right - (G_left + G_right)^2/(H_left + H_right)
+        #gain = G_left^2/H_left + G_right^2/H_right - (G_left + G_right)^2/(H_left + H_right)
+        gain = (H_left == 0 ? 0 : G_left^2/H_left) + (H_right == 0 ? 0 : G_right^2/H_right) - (G_left + G_right)^2/(H_left + H_right)
         coverage = H_left + H_right
 
         if haskey(freq_dict, jlt.splitfeature)
