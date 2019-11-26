@@ -13,81 +13,86 @@ if !isdir("c:/data/Churn_Modelling_fnl_w_profit.jdf")
     savejdf(a, "c:/data/Churn_Modelling_fnl_w_profit.jdf")
 end
 
-@time a = loadjdf("c:/data/Churn_Modelling_fnl_w_profit.jdf")
 
-@time treem = jlboost(a, :Exited, [:CreditScore])
+
+@time a = loadjdf("c:/data/Churn_Modelling_fnl_w_profit.jdf")
+a[!, :Geography] = categorical(a[!, :Geography])
+a[!, :Gender] = categorical(a[!, :Gender])
+
+replace_onehot!(a, :Geography)
+replace_onehot!(a, :Gender)
+
+@time m = jlboost(a, :Exited, setdiff(names(a), [:Exited, :hist_mthly_profit]))
+feature_importance(m, a)
+
+using TableView
+showtable(a)
+
+using BenchmarkTools
+
+
+
+a[!, :dummy] .= 1
+a[!, :row_id] .= 1:nrow(a)
+
+unstack(a[!, [:row_id, :Geography, :dummy]], :Geography, :dummy)
+
+x = a[!, :Geography]
+
+a[!, :Geography] = categorical(a[!, :Geography])
+
+using Flux: onehotbatch
+using DataAPI: refarray, refvalue, defaultarray, refpool
+
+x = a[!, :Geography]
+x.refs
+x.pool.index
+fieldnames(typeof(x.pool))
+
+xx = onehotbatch(x.refs, 1:length(x.pool.index))
+
+a[!, :Geography_Germany] = xx[1, :]
+
+
+
+(a[!, :Geography])
+refarray(a[!, :Geography])
+refvalue(a[!, :Geography])
+
+refpool(a[!, :Geography])
+
+@time treem = jlboost(a, :Exited, [:Age])
+
+@time treem2 = jlboost(a, :Exited, [:CreditScore], predict(treem, a))
+
+treem3 = treem + treem2
+
+
+AUC(-predict(treem, a), a.Exited)
+
+AUC(-predict(treem2, a), a.Exited)
+
+AUC(-predict(treem3, a), a.Exited)
+
+
+@time treem = jlboost(a, :Exited, [:Age, :CreditScore])
 
 predict(treem, a)
 get_features(treem)
 feature_importance(treem, a)
 
-jlt = trees(treem)[1]
-df = a
-loss = LogitLogLoss()
-features = setdiff(names(a), [:Exited])
-target = :Exited
-warmstart = fill(0, length(nrow(a)))
-verbose = false
-lambda = 0
-gamma = 0
-
-
-rows_bool = fill(true, nrow(df))
-freq_dict = Dict{Symbol, Int}()
-gain_dict = Dict{Symbol, Float64}()
-coverage_dict = Dict{Symbol, Float64}()
-
-Gs = JLBoost.g.(loss, df[!, target], jlt.weight)
-Hs = JLBoost.h.(loss, df[!, target], jlt.weight)
-
-
-
-if !isequal(jlt.splitfeature, missing)
-
-!isequal(jlt.splitfeature, missing)
-# compute the Quality/Gain. Coverage
-rows_bool_left = rows_bool .& (df[!, jlt.splitfeature] .<= jlt.split)
-
-rows_bool_right = rows_bool .& (.!rows_bool_left)
-
-G_left = sum(@view(Gs[rows_bool_left]))
-H_left = sum(@view(Hs[rows_bool_left]))
-
-G_right = sum(@view(Gs[rows_bool_right]))
-H_right = sum(@view(Hs[rows_bool_right]))
-
-
-
-# note that hyper parameters are not used to compute the gain
-gain = (H_left == 0 ? 0 : G_left^2/H_left) + (H_right == 0 ? 0 : G_right^2/H_right) - (G_left + G_right)^2/(H_left + H_right)
-coverage = H_left + H_right
-
-if haskey(freq_dict, jlt.splitfeature)
-    freq_dict[jlt.splitfeature] += 1
-    gain_dict[jlt.splitfeature] += gain
-    coverage_dict[jlt.splitfeature] += coverage
-else
-    freq_dict[jlt.splitfeature] = 1
-    gain_dict[jlt.splitfeature] = gain
-    coverage_dict[jlt.splitfeature] = coverage
-end
-print(gain_dict)
-
-JLBoost.feature_importance!(jlt.children[1], df, loss, target, rows_bool_left,  freq_dict, gain_dict, coverage_dict, Gs, Hs)
-JLBoost.feature_importance!(jlt.children[2], df, loss, target, rows_bool_right, freq_dict, gain_dict, coverage_dict, Gs, Hs)
+if false # for debuggin
+    jlt = trees(treem)[1]
+    df = a
+    loss = LogitLogLoss()
+    features = setdiff(names(a), [:Exited])
+    target = :Exited
+    warmstart = fill(0, length(nrow(a)))
+    verbose = false
+    lambda = 0
+    gamma = 0
 end
 
-################################
-jlt = jlt.children[1]
-rows_bool = rows_bool_left
-
-jlt = jlt.children[2]
-rows_bool = rows_bool_right
-################################
-
-
-(freq_dict = freq_dict, gain_dict = gain_dict, coverage_dict = coverage_dict)
-end
 
 using MLJ
 

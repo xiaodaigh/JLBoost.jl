@@ -19,10 +19,10 @@ gamma = 0
 
 a[!, :SeriousDlqin2yrs] = allowmissing(a[!, :SeriousDlqin2yrs])
 
-a[!, :DebtRatio] = allowmissing(a[!, :DebtRatio])
-a[rand(1:nrow(a), 15_000), :DebtRatio] .= missing
+#a[!, :DebtRatio] = allowmissing(a[!, :DebtRatio])
+#a[rand(1:nrow(a), 15_000), :DebtRatio] .= missing
 
-treem = jlboost(a, target, features)
+@time treem = jlboost(a, target, features)
 
 predict(treem, a)
 get_features(treem)

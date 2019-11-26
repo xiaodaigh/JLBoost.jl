@@ -1,7 +1,7 @@
 module JLBoostTrees
 
 using DataFrames
-import Base: show, *, print, println
+import Base: show, *, print, println, +
 
 export JLBoostTree, JLBoostTreeModel, show, trees
 export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println, vcat
@@ -23,7 +23,7 @@ trees(jlt::JLBoostTreeModel) = jlt.jlt
 
 import Base: vcat
 
-vcat(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
++(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
 	v3 = deepcopy(v1)
 	v3.jlt = vcat(trees(v1), trees(v2))
 	v3
