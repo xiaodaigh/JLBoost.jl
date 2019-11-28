@@ -213,7 +213,7 @@ JLBoostClassifier(loss = LogitLogLoss(),
                   min_child_weight = 1,
                   lambda = 0,
                   gamma = 0,
-                  colsample_bytree = 1,) @ 5…55
+                  colsample_bytree = 1,) @ 1…01
 ````
 
 
@@ -320,7 +320,7 @@ feature_importance(xgtreemodel, iris)
 
 ##### Tables.jl
 
-The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However you need to have these additional methods defined for the table `df`
+The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
 
 ````julia
 
@@ -355,19 +355,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 ````
 JLBoostTreeModel(JLBoostTree[
-   -- x <= 46.46175206896959
-     -- x <= 18.99955811116849
-       ---- weight = 18.274163190698808
+   -- x <= 48.80903937587102
+     -- x <= 24.778495741607752
+       ---- weight = 28.620036857299315
 
-     -- x > 18.99955811116849
-       ---- weight = 67.92977388683316
+     -- x > 24.778495741607752
+       ---- weight = 74.98285858463593
 
-   -- x > 46.46175206896959
-     -- x <= 75.29684664522276
-       ---- weight = 122.8385837836683
+   -- x > 48.80903937587102
+     -- x <= 72.96203724073564
+       ---- weight = 125.1635850369597
 
-     -- x > 75.29684664522276
-       ---- weight = 181.30740260079625
+     -- x > 72.96203724073564
+       ---- weight = 174.73994058247774
 ], LPDistLoss{2}(), :y)
 ````
 
