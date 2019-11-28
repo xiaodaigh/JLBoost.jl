@@ -88,7 +88,7 @@ using MLJ
 X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 using MLJBase
-model = JLBoostModel()
+model = JLBoostClassifier()
 ```
 
 ```julia
