@@ -108,7 +108,7 @@ feature_importance(xgtreemodel, iris)
 
 ##### Tables.jl
 
-The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However you need to have these additional methods defined for the table `df`
+The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
 
 ```julia; eval = false
 nrow(df) # returns the number of rows
