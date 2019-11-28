@@ -22,10 +22,10 @@ end
 
 function predict!(jlt::JLBoostTree, df, res, assignbool)
 	if length(jlt.children) == 2
-	    new_assignbool = assignbool .& (df[!, jlt.splitfeature] .<= jlt.split)
+	    new_assignbool = assignbool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
 	    predict!(jlt.children[1], df, res, new_assignbool)
 
-	    new_assignbool .= assignbool .& (df[!, jlt.splitfeature] .> jlt.split)
+	    new_assignbool .= assignbool .& (getproperty(Tables.columns(df), jlt.splitfeature) .> jlt.split)
 	    predict!(jlt.children[2], df, res, new_assignbool)
 	else length(jlt.children) == 0
 	    res[assignbool] .= res[assignbool] .+ jlt.weight

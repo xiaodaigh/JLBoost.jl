@@ -1,5 +1,6 @@
 export jlboost!, jlboost
 
+using DataFrames: nrow, ncol
 using Tables
 
 """
@@ -63,11 +64,11 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 
 	if subsample == 1
 		warm_start = fill(0.0, nrow(df))
-		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
 	else
 		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
 		warm_start = fill(0.0, length(rows))
-		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
 	end
 	res_jlt[1] = deepcopy(new_jlt);
 
@@ -85,12 +86,12 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 
 		if subsample == 1
 			warm_start = predict(res_jlt[1:nrounds-1], df)
-			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
 		else
 			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
 			warm_start = predict(res_jlt[1:nrounds-1], view(dfc, rows, :))
 
-			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); kwargs...);
+			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose,kwargs...);
 		end
 	    res_jlt[nround] = deepcopy(new_jlt)
 	end

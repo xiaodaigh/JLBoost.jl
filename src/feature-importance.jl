@@ -1,5 +1,7 @@
 export feature_importance
 
+using DataFrames: DataFrame
+
 """
     feature_importance(jlt::JLBoostTree, df, loss, target)
     feature_importance(jlt::JLBoostTreeModel, df)
@@ -61,10 +63,10 @@ feature_importance(jlt::JLBoostTree, df, loss, target) = begin
     dict_to_df(d)
 end
 
-feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, df[!, target], jlt.weight), Hs = JLBoost.h.(loss, df[!, target], jlt.weight)) = begin
+feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
     if !isequal(jlt.splitfeature, missing)
         # compute the Quality/Gain. Coverage
-        rows_bool_left = rows_bool .& (df[!, jlt.splitfeature] .<= jlt.split)
+        rows_bool_left = rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
 
         rows_bool_right = rows_bool .& (.!rows_bool_left)
 
@@ -74,7 +76,8 @@ feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, n
         H_right = sum(@view(Hs[rows_bool_right]))
 
         # note that hyper parameters are not used to compute the gain
-        gain = G_left^2/H_left + G_right^2/H_right - (G_left + G_right)^2/(H_left + H_right)
+        #gain = G_left^2/H_left + G_right^2/H_right - (G_left + G_right)^2/(H_left + H_right)
+        gain = (H_left == 0 ? 0 : G_left^2/H_left) + (H_right == 0 ? 0 : G_right^2/H_right) - (G_left + G_right)^2/(H_left + H_right)
         coverage = H_left + H_right
 
         if haskey(freq_dict, jlt.splitfeature)

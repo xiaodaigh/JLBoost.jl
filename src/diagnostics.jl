@@ -1,5 +1,7 @@
 export AUC, gini
 
+using DataFrames: by, DataFrame, sort!
+
 function AUC_plot_data(score, target;  plotauc = false)
     tmpdf = by(
         DataFrame(score=score, target = target),
