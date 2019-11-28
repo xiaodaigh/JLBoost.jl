@@ -32,5 +32,6 @@ include("jlboost-fit.jl")
 include("get-features.jl")
 include("feature-importance.jl")
 include("mlj.jl")
+include("tables.jl")
 
 end # module

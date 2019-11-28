@@ -22,7 +22,7 @@ a[!, :SeriousDlqin2yrs] = allowmissing(a[!, :SeriousDlqin2yrs])
 #a[!, :DebtRatio] = allowmissing(a[!, :DebtRatio])
 #a[rand(1:nrow(a), 15_000), :DebtRatio] .= missing
 
-@time treem = jlboost(a, target, features)
+@time treem = jlboost(a, target, setdiff(features, [:NumberOfTimes90DaysLate]))
 
 predict(treem, a)
 get_features(treem)

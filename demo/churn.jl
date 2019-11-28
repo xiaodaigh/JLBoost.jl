@@ -36,7 +36,9 @@ if false # for debuggin
     gamma = 0
 end
 
-
+###############################################################################
+# testing MLJ
+###############################################################################
 using MLJ
 
 model = JLBoostModel()
@@ -47,3 +49,35 @@ mljmodel = fit(model, 0, X, y)
 predict(model, mljmodel.fitresult, X)
 
 fitted_params(model, mljmodel.fitresult)
+
+###############################################################################
+# fit JDFFile
+###############################################################################
+jdf = JDFFile("c:/data/Churn_Modelling_fnl_w_profit.jdf")
+@time m = jlboost(jdf, :Exited, setdiff(names(jdf), [:Exited, :hist_mthly_profit]))
+feature_importance(m, jdf)
+
+###############################################################################
+# fit IndexedTables
+###############################################################################
+using IndexedTables, Tables
+
+t = table(columntable(a))
+
+@time m = jlboost(t, :Exited)
+feature_importance(m, t)
+
+AUC(-predict(m, t), getproperty(Tables.columns(t), :Exited))
+
+
+###############################################################################
+# fit IndexedTables subsample
+###############################################################################
+using IndexedTables, Tables
+
+t = table(columntable(a))
+
+@time m = jlboost(t, :Exited; subsample = 0.5, colsample_bytree = 0.5)
+feature_importance(m, t)
+
+AUC(-predict(m, t), getproperty(Tables.columns(t), :Exited))

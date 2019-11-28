@@ -63,10 +63,10 @@ feature_importance(jlt::JLBoostTree, df, loss, target) = begin
     dict_to_df(d)
 end
 
-feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, df[!, target], jlt.weight), Hs = JLBoost.h.(loss, df[!, target], jlt.weight)) = begin
+feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
     if !isequal(jlt.splitfeature, missing)
         # compute the Quality/Gain. Coverage
-        rows_bool_left = rows_bool .& (df[!, jlt.splitfeature] .<= jlt.split)
+        rows_bool_left = rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
 
         rows_bool_right = rows_bool .& (.!rows_bool_left)
 
