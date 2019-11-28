@@ -39,13 +39,13 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -60,7 +60,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{JLBoostTree,1}
+Array{JLBoost.JLBoostTrees.JLBoostTree,1}
 ````
 
 
@@ -71,7 +71,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-LogitLogLoss
+JLBoost.LogitLogLoss
 ````
 
 
@@ -96,7 +96,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
@@ -116,7 +116,7 @@ JLBoostTreeModel(JLBoostTree[
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -205,15 +205,15 @@ model = JLBoostClassifier()
 
 
 ````
-JLBoostClassifier(loss = LogitLogLoss(),
-                  nrounds = 1,
-                  subsample = 1,
-                  eta = 1,
-                  max_depth = 6,
-                  min_child_weight = 1,
-                  lambda = 0,
-                  gamma = 0,
-                  colsample_bytree = 1,) @ 1…01
+JLBoost.JLBoostClassifier(loss = JLBoost.LogitLogLoss(),
+                          nrounds = 1,
+                          subsample = 1,
+                          eta = 1,
+                          max_depth = 6,
+                          min_child_weight = 1,
+                          lambda = 0,
+                          gamma = 0,
+                          colsample_bytree = 1,) @ 7…68
 ````
 
 
@@ -247,16 +247,17 @@ Choosing a split on PetalWidth
 Choosing a split on pred1
 Choosing a split on pred2
 Choosing a split on pred1_plus_2
-(fitresult = JLBoostTreeModel(JLBoostTree[
+(fitresult = JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLB
+oostTree[
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :__y__),
+], JLBoost.LogitLogLoss(), :__y__),
  cache = nothing,
  report = (AUC = 0.16666666666666669,
-           feature_importance = 1×4 DataFrame
+           feature_importance = 1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -307,7 +308,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrame
+1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -354,21 +355,21 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-JLBoostTreeModel(JLBoostTree[
-   -- x <= 48.80903937587102
-     -- x <= 24.778495741607752
-       ---- weight = 28.620036857299315
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
+   -- x <= 49.952074207136945
+     -- x <= 26.53630612313438
+       ---- weight = 29.849831699545945
 
-     -- x > 24.778495741607752
-       ---- weight = 74.98285858463593
+     -- x > 26.53630612313438
+       ---- weight = 79.73737775630875
 
-   -- x > 48.80903937587102
-     -- x <= 72.96203724073564
-       ---- weight = 125.1635850369597
+   -- x > 49.952074207136945
+     -- x <= 75.43970181879904
+       ---- weight = 125.58530639769975
 
-     -- x > 72.96203724073564
-       ---- weight = 174.73994058247774
-], LPDistLoss{2}(), :y)
+     -- x > 75.43970181879904
+       ---- weight = 179.8445042292644
+], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
 
@@ -442,23 +443,6 @@ rm("iris.jdf", force=true, recursive=true)
 
 
 
-
-
-## Why create JLBoost.jl when XGBoost.jl works perfectly fine?
-
-Indeed XGBoost.jl is greate and so are the Python and R incarnations of XGBoost. But something is amiss. I feel like I have to jump through hoops to get it to work. E.g. I have convert the data to matrix format, so I can't use dataframes directly, and it can't feal with CategoricalArrays directly and instead have to employ one hot encoding. LightGBM has interesting algorithms for deal with categorical features but they are not so easy to implement in XGBoost.jl as that's basicaly a C++ library.
-
-The journey that lead to create JLBoost.jl was an interesting one. When I was running the Sydney Julia meetup (SJM), I got an email from Adam, the creator of JuML.jl, and we discussed the possibility of giving a presentation at SJM. Adam mentioned that he created an XGBoost clone in Julia that was faster than the C++ XGBoost implementation. Hist implemnetaion was only about 500-600 lines of Julia and has a much smaller memory footprint. I was slightly skeptical as you can imagine. When I first came across XGBoost, I knew it as a C++ library. And because it had help win so many Kaggle competitions, I thought it must contain some highly advanced math that I won't really understand even though I have an honours degree in pure maths and a master degree in statistics. In other words, I was intimated by XGBoost.
-
-But Adam made me curious. He mentioned that I should just read the XGBoost paper. So I did. Initially, I struggle, but soon everything fell into place. I can actually understand this! In fact, I can understand this well enough that I can explain it to others. And it isn't because I am super smart, it's because The boosting algorithm described in the XGBoost paper rquires some high school level algebra and an understanding of basic calculus and Taylor series expansions, which are typically covered in first or second year of university.
-
-JuML.jl opened my eyes to the possibilities of Julia, but it only implemented the binary logistic case and it didn't work with DataFrames.jl. Beyond JuML.jl, But there was no pure-Julia implementation of the XGBoost algorithms. So I have this idea to implement JLBoost that layed dormant as I slogged away at my day time job as a consultant.
-
-Recently, I decided to finally give JLBoost a crack! And I was able to implement the basic XGBoost algorithms, use DataFrames.jl, allow on-disk fitting with JDF.Files, all in a few hundred lines of code!
-
-Doing JLBoost.jl in Julia makes the package more extensible. In fact, I can implement the Tabless.jl interface and allow any Tables.jl-compatible data structure to fit models using JLBoost! I can add support to any scalar target models easily without having to resort to C++. In fact, any sufficiently motivated Julia-programming can enjoy JLBoost.jl's boosting algorithm if they just implement g and h for their loss function! Neat!
-
-In conclusion, JLBoost.jl being pure-Julia makes the code base much smaller and easier to maintiain. It also makes it much more extensible then equivalent C++ implementations. It can work with Tables.jl data structure that JLBoost.jl doesn't know about.
 
 
 ## Notes
