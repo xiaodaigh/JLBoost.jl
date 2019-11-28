@@ -30,7 +30,7 @@ feature_importance(treem, a)
 
 using MLJ
 
-model = JLBoostModel()
+model = JLBoostClassifier()
 
 X, y = unpack(a, !=(:SeriousDlqin2yrs), ==(:SeriousDlqin2yrs))
 
