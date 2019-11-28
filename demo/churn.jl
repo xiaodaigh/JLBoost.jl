@@ -41,7 +41,7 @@ end
 ###############################################################################
 using MLJ
 
-model = JLBoostModel()
+model = JLBoostClassifier()
 
 X, y = unpack(a, !=(:Exited), ==(:Exited))
 
@@ -81,3 +81,8 @@ t = table(columntable(a))
 feature_importance(m, t)
 
 AUC(-predict(m, t), getproperty(Tables.columns(t), :Exited))
+
+
+JLBoostClassifier()
+JLBoostRegressor()
+JLBoostCount()
