@@ -1,16 +1,18 @@
 export fit, predict, fitted_params, JLBoostMLJModel, JLBoostClassifier, JLBoostRegressor, JLBoostCount
 
 #using MLJBase
-import MLJBase: Deterministic, clean!, fit, predict, fitted_params, load_path
+import MLJBase: Probabilistic, Deterministic, clean!, fit, predict, fitted_params, load_path, Table
 import MLJBase: package_name, package_uuid, package_url, is_pure_julia, package_license
-import MLJBase: input_scitype, target_scitype
+import MLJBase: input_scitype, target_scitype, docstring
+
+using ScientificTypes: Continuous, OrderedFactor, Count, Multiclass, Finite
 
 using LossFunctions: PoissonLoss, L2DistLoss
 
 # supervised determinstinistic model
-abstract type JLBoostMLJModel <: Deterministic end
+#abstract type JLBoostMLJModel <: Supervised end
 
-mutable struct JLBoostClassifier <: JLBoostMLJModel
+mutable struct JLBoostClassifier <: Probabilistic
     loss
     nrounds
     subsample
@@ -22,7 +24,7 @@ mutable struct JLBoostClassifier <: JLBoostMLJModel
     colsample_bytree
 end
 
-mutable struct JLBoostRegressor <: JLBoostMLJModel
+mutable struct JLBoostRegressor <: Deterministic
     loss
     nrounds
     subsample
@@ -33,7 +35,7 @@ mutable struct JLBoostRegressor <: JLBoostMLJModel
     gamma
     colsample_bytree
 end
-mutable struct JLBoostCount <: JLBoostMLJModel
+mutable struct JLBoostCount <: Deterministic
     loss
     nrounds
     subsample
@@ -120,12 +122,14 @@ JLBoostCount(;
     gamma = 0,
     colsample_bytree = 1) = JLBoostCount(loss, nrounds, subsample, eta, max_depth, min_child_weight, lambda, gamma, colsample_bytree)
 
+const JLBoostMLJModel = Union{JLBoostClassifier, JLBoostRegressor, JLBoostCount}
+
 # see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/#The-fit-method-1
 fit(model::JLBoostMLJModel, verbosity::Int, X, y::Vector) = begin
     fit(model::JLBoostMLJModel, verbosity::Integer, X, DataFrame(__y__ = y))
 end
 
-fit(model::JLBoostMLJModel, verbosity::Int, X, y) = begin
+fit(model::JLBoostClassifier, verbosity::Int, X, y) = begin
     if typeof(y) <: AbstractVector
         y = DataFrame(__y__ = y)
     end
@@ -141,14 +145,28 @@ fit(model::JLBoostMLJModel, verbosity::Int, X, y) = begin
         gamma = model.gamma, verbose = verbosity >= 1
      )
 
-     (
-        fitresult = fitresult,
-        cache = nothing,
-        report = (
-            AUC = abs(AUC(predict(fitresult, X), y[:, 1])),
-            feature_importance = feature_importance(fitresult, df)
+     if length(levels(y[:, 1])) == 2
+         println("meh")
+         res = (
+            fitresult = fitresult,
+            cache = nothing,
+            report = (
+                AUC2 = abs(AUC(predict(fitresult, X), y[:, 1]))#,
+                # feature_importance2 = feature_importance(fitresult, df)
+            )
         )
-    )
+        println("got here")
+        return res
+    else
+         return (
+            fitresult = fitresult,
+            cache = nothing,
+            report = (
+                placeholder = true
+                # feature_importance3 = feature_importance(fitresult, df)
+            )
+        )
+    end
 end
 
 # see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/#The-fitted_params-method-1
@@ -161,12 +179,31 @@ end
 
 # see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/#Trait-declarations-1
 input_scitype(::Type{<:JLBoostMLJModel}) = Table(Union{Continuous, OrderedFactor, Count})
-target_scitype(::Type{<:JLBoostMLJModel}) = AbstractVector{<:Union{Continuous, MultiClass{2}, Count, OrderedFactor}}
+
+target_scitype(::Type{<:JLBoostClassifier}) = AbstractVector{<:Finite{2}} #AbstractVector{<:Multiclass{2}}
+target_scitype(::Type{<:JLBoostRegressor}) = AbstractVector{<:Continuous}
+target_scitype(::Type{<:JLBoostCount}) = AbstractVector{<:Count}
 
 # Misc see https://alan-turing-institute.github.io/MLJ.jl/stable/adding_models_for_general_use/
-load_path(::Type{<:JLBoostMLJModel}) = ""
+load_path(::Type{JLBoostClassifier}) = "JLBoost.JLBoostClassifier"
+load_path(::Type{<:JLBoostRegressor}) = "JLBoost.JLBoostRegressor"
+load_path(::Type{<:JLBoostCount}) = "JLBoost.JLBoostCount"
+
+
 package_name(::Type{<:JLBoostMLJModel}) = "JLBoost"
 package_uuid(::Type{<:JLBoostMLJModel}) = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
 package_url(::Type{<:JLBoostMLJModel}) = "https://github.com/xiaodaigh/JLBoost.jl"
 is_pure_julia(::Type{<:JLBoostMLJModel}) = true
 package_license(::Type{<:JLBoostMLJModel}) = "MIT"
+
+docstring(::Type{JLBoostClassifier}) =
+    "The JLBoost gradient boosting method, for use with "*
+    "`Binary=Finite{2}` univariate targets"
+
+docstring(::Type{JLBoostRegressor}) =
+    "The JLBoost gradient boosting method, for use with "*
+    "`Continuous` univariate targets"
+
+docstring(::Type{JLBoostCount}) =
+    "The JLBoost gradient boosting method, for use with "*
+    "`Count` univariate targets, using a Poisson loss function"

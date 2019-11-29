@@ -1,6 +1,8 @@
 #using CuArrays
 using Statistics: mean
 using Tables
+using CategoricalArrays
+using MappedArrays: mappedarray
 
 export best_split
 
@@ -45,6 +47,19 @@ end
 
 Assume that f, t, p are iterable and that they are sorted. Intended for advance users only
 """
+function _best_split(loss::LogitLogLoss, feature::AbstractVector, target::CategoricalArray, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
+	@assert length(levels(target)) == 2
+
+	best_split(loss, feature, target.refs .- 1, warmstart, lambda, gamma; kwargs...)
+end
+
+function _best_split(loss::LogitLogLoss, feature::AbstractVector, target::SubArray{A, B, C, D, E}, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...) where {A, B, C<:CategoricalArray, D, E}
+	@assert length(levels(target)) == 2
+
+	best_split(loss, feature, mappedarray(x->x.level, target), warmstart, lambda, gamma; kwargs...)
+end
+
+
 function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
 	@assert length(feature) >= 2
 	@assert length(target) == length(feature)

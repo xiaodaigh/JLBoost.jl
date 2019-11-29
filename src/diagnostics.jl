@@ -1,10 +1,18 @@
 export AUC, gini
 
 using DataFrames: by, DataFrame, sort!
+using CategoricalArrays: CategoricalArray
 
-function AUC_plot_data(score, target;  plotauc = false)
+function AUC_plot_data(score, target::CategoricalArray;  kwargs...)
+    @assert length(levels(target)) == 2
+    _AUC_plot_data(score, target.refs .- 1; kwargs...)
+end
+
+AUC_plot_data(score, target;  kwargs...) = _AUC_plot_data(score, target;  kwargs...)
+
+function _AUC_plot_data(score, target;  plotauc = false)
     tmpdf = by(
-        DataFrame(score=score, target = target),
+        DataFrame(score = score, target = target),
         :score,
         df1->DataFrame(ntarget = sum(df1[!,:target]), n = size(df1)[1])
     )
