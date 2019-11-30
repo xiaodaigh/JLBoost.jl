@@ -6,6 +6,14 @@ using MappedArrays: mappedarray
 
 export best_split
 
+"""
+    best_split(loss, df::DataFrameLike, feature, target, warmstart, lambda, gamma)
+
+Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
+
+Does not assume that Feature, target, and warmstart sorted and will sort them for you.
+"""
+
 function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
 	 @assert Tables.istable(df)
 

@@ -79,7 +79,7 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
-#### MLJ.jl &
+#### MLJ.jl
 
 There is integration with the MLJ.jl modelling framework
 
@@ -105,7 +105,7 @@ One can obtain the feature importance using the `feature_importance` function
 feature_importance(xgtreemodel, iris)
 ```
 
-#### Tables.jl integrations
+#### Tables.jl integration
 
 Any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
 
