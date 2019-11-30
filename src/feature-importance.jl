@@ -5,9 +5,15 @@ using DataFrames: DataFrame
 """
     feature_importance(jlt::JLBoostTree, df, loss, target)
     feature_importance(jlt::JLBoostTreeModel, df)
+    feature_importance(jlt::JLBoostTreeModel, X, y::AbstractVector)
 
 Return the feature of the tree computed on df
 """
+feature_importance(jlt::JLBoostTreeModel, X, y::AbstractVector) = begin
+    # TODO use JLBoostTreeModel.target instead
+    feature_importance(jlt, hcat(X, DataFrame(jlt.target => y)))
+end
+
 feature_importance(jlt::JLBoostTreeModel, df) = begin
     feature_importance(trees(jlt), df, jlt.loss, jlt.target)
 end

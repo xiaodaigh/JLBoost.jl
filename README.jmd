@@ -79,15 +79,14 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
-#### MLJ.jl & Tables.jl integrations
+#### MLJ.jl &
 
 There is integration with the MLJ.jl modelling framework
 
 ```julia
-using MLJ
+using MLJ, MLJBase, MLJJLBoost
 X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
-using MLJBase
 model = JLBoostClassifier()
 ```
 
@@ -106,9 +105,9 @@ One can obtain the feature importance using the `feature_importance` function
 feature_importance(xgtreemodel, iris)
 ```
 
-##### Tables.jl
+#### Tables.jl integrations
 
-The MLJ.jl frameworks allows interaction with any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
+Any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
 
 ```julia; eval = false
 nrow(df) # returns the number of rows

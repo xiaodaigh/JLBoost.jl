@@ -47,6 +47,16 @@ end
 
 *(eta::Number, jlt::JLBoostTree) = WeightedJLBoostTree(jlt, eta)
 
+*(jlt::WeightedJLBoostTree, eta::Number) = begin
+	jlt.eta *= eta
+	jlt
+end
+
+*(eta::Number, jlt::WeightedJLBoostTree) = begin
+	jlt.eta *= eta
+	jlt
+end
+
 
 """
 	show(io, jlt, ntabs; splitfeature="")
