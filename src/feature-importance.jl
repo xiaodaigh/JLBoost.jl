@@ -10,11 +10,15 @@ using DataFrames: DataFrame
 Return the feature of the tree computed on df
 """
 feature_importance(jlt::JLBoostTreeModel, X, y::AbstractVector) = begin
-    # TODO use JLBoostTreeModel.target instead
     feature_importance(jlt, hcat(X, DataFrame(jlt.target => y)))
 end
 
 feature_importance(jlt::JLBoostTreeModel, df) = begin
+    if (typeof(df[!, jlt.target]) <: CategoricalVector) & (jlt.loss isa LogitLogLoss)
+        dfc = copy(df)
+        dfc[!, jlt.target] = categorical(dfc[!, jlt.target]).refs .- 1
+        return feature_importance(trees(jlt), dfc, jlt.loss, jlt.target)
+    end
     feature_importance(trees(jlt), df, jlt.loss, jlt.target)
 end
 
@@ -68,6 +72,11 @@ feature_importance(jlt::JLBoostTree, df, loss, target) = begin
     d = feature_importance!(jlt, df, loss, target)
     dict_to_df(d)
 end
+
+# feature_importance!(jlt::JLBoostTree, df, loss::LogitLogLoss, target::CategoricalArray, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
+#     @assert length(levels(target)) == 2
+#     feature_importance!(jlt, df, loss, target.refs .- 1, rows_bool, freq_dict, gain_dict, coverage)
+# end
 
 feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
     if !isequal(jlt.splitfeature, missing)

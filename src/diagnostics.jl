@@ -1,10 +1,12 @@
 export AUC, gini
 
 using DataFrames: by, DataFrame, sort!
-using CategoricalArrays: CategoricalArray
+using CategoricalArrays: CategoricalVector
 
-function AUC_plot_data(score, target::CategoricalArray;  kwargs...)
+function AUC_plot_data(score, target::CategoricalVector;  kwargs...)
     @assert length(levels(target)) == 2
+    println("ok")
+    return target.refs .- 1
     _AUC_plot_data(score, target.refs .- 1; kwargs...)
 end
 
