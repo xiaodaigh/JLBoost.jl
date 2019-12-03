@@ -43,6 +43,16 @@ mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
 	eta::Number
 end
 
+getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
+	if sym == :eta
+		return getfield(jlt, :eta)
+	elseif sym == :tree
+		return getfield(jlt, :tree)
+	else
+		return getproperty(getfield(jlt, :tree), sym)
+	end
+end
+
 *(jlt::JLBoostTree, eta::Number) = WeightedJLBoostTree(jlt, eta)
 
 *(eta::Number, jlt::JLBoostTree) = WeightedJLBoostTree(jlt, eta)

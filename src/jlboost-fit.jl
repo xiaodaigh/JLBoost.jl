@@ -39,7 +39,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}; kwargs...
 end
 
 function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector, loss = LogitLogLoss();
-	nrounds = 1, subsample = 1, eta = 1, verbose =false, colsample_bytree = 1, kwargs...)
+	nrounds = 1, subsample = 1, eta = 1.0, verbose =false, colsample_bytree = 1, kwargs...)
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
 	#, ,  colsample_bynode = 1,
 
@@ -51,7 +51,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 	dfc = Tables.columns(df)
 
 
-	res_jlt = Vector{JLBoostTree}(undef, nrounds)
+	res_jlt = Vector{AbstractJLBoostTree}(undef, nrounds)
 	for i in 1:nrounds
 	 	res_jlt[i] = JLBoostTree(0.0)
 	end
@@ -70,7 +70,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 		warm_start = fill(0.0, length(rows))
 		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
 	end
-	res_jlt[1] = deepcopy(new_jlt);
+	res_jlt[1] = eta*deepcopy(new_jlt);
 
 	for nround in 2:nrounds
 		if verbose
@@ -93,7 +93,7 @@ function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_star
 
 			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose,kwargs...);
 		end
-	    res_jlt[nround] = deepcopy(new_jlt)
+	    res_jlt[nround] = eta*deepcopy(new_jlt)
 	end
 	res_jlt
 

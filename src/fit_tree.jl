@@ -18,7 +18,7 @@ function _fit_tree!(loss, df, target, features, warm_start, feature_choice_strat
 
 	# make absolutely sure that target is not part of it
 	features = setdiff(features, [target])
-	
+
 	# compute the gain for all splits for all features
 	split_with_best_gain = best_split(loss, df, features[1], target, warm_start, lambda, gamma; verbose=verbose, kwargs...)
 
