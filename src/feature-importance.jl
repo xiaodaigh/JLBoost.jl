@@ -10,11 +10,15 @@ using DataFrames: DataFrame
 Return the feature of the tree computed on df
 """
 feature_importance(jlt::JLBoostTreeModel, X, y::AbstractVector) = begin
-    # TODO use JLBoostTreeModel.target instead
     feature_importance(jlt, hcat(X, DataFrame(jlt.target => y)))
 end
 
 feature_importance(jlt::JLBoostTreeModel, df) = begin
+    if (typeof(df[!, jlt.target]) <: CategoricalVector) & (jlt.loss isa LogitLogLoss)
+        dfc = copy(df)
+        dfc[!, jlt.target] = 2 .- categorical(dfc[!, jlt.target]).refs
+        return feature_importance(trees(jlt), dfc, jlt.loss, jlt.target)
+    end
     feature_importance(trees(jlt), df, jlt.loss, jlt.target)
 end
 
@@ -45,7 +49,7 @@ dict_to_df(d) = begin
     sort!(join(join(dgain, dcoverage, on = :feature),  dfreq, on = :feature), [:Quality_Gain, :Coverage, :Frequency], rev = true)
 end
 
-feature_importance(jlt::AbstractVector{<:JLBoostTree}, df, loss, target) = begin
+feature_importance(jlt::AbstractVector{<:AbstractJLBoostTree}, df, loss, target) = begin
     res = feature_importance!.(jlt, Ref(df), Ref(loss), Ref(target))
 
     # combine
@@ -64,12 +68,13 @@ feature_importance(jlt::AbstractVector{<:JLBoostTree}, df, loss, target) = begin
 end
 
 
-feature_importance(jlt::JLBoostTree, df, loss, target) = begin
+feature_importance(jlt::AbstractJLBoostTree, df, loss, target) = begin
     d = feature_importance!(jlt, df, loss, target)
     dict_to_df(d)
 end
 
-feature_importance!(jlt::JLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
+
+feature_importance!(jlt::AbstractJLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
     if !isequal(jlt.splitfeature, missing)
         # compute the Quality/Gain. Coverage
         rows_bool_left = rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)

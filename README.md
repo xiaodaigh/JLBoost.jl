@@ -39,13 +39,14 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], JLBoost.LogitLogLoss(), :is_setosa)
+], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -60,7 +61,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{JLBoost.JLBoostTrees.JLBoostTree,1}
+Array{AbstractJLBoostTree,1}
 ````
 
 
@@ -71,7 +72,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-JLBoost.LogitLogLoss
+LogitLogLoss
 ````
 
 
@@ -96,13 +97,15 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-, 
+, eta = 1.0 (tree weight)
+
    -- PetalLength <= 1.9
      -- SepalLength <= 4.8
        ---- weight = 1.1353352832366135
@@ -116,7 +119,7 @@ JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], JLBoost.LogitLogLoss(), :is_setosa)
+], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -196,7 +199,7 @@ unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 There is integration with the MLJ.jl modelling framework
 
 ````julia
-using MLJ, MLJBase, MLJJLBoost
+using MLJ, MLJBase, JLBoostmlj
 X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 model = JLBoostClassifier()
@@ -204,15 +207,15 @@ model = JLBoostClassifier()
 
 
 ````
-MLJJLBoost.JLBoostClassifier(loss = JLBoost.LogitLogLoss(),
-                             nrounds = 1,
-                             subsample = 1,
-                             eta = 1,
-                             max_depth = 6,
-                             min_child_weight = 1,
-                             lambda = 0,
-                             gamma = 0,
-                             colsample_bytree = 1,) @ 1…40
+JLBoostClassifier(loss = LogitLogLoss(),
+                  nrounds = 1,
+                  subsample = 1.0,
+                  eta = 1.0,
+                  max_depth = 6,
+                  min_child_weight = 1.0,
+                  lambda = 0.0,
+                  gamma = 0.0,
+                  colsample_bytree = 1,) @ 7…50
 ````
 
 
@@ -246,17 +249,19 @@ Choosing a split on PetalWidth
 Choosing a split on pred1
 Choosing a split on pred2
 Choosing a split on pred1_plus_2
-(fitresult = JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLB
-oostTree[
+(fitresult = (treemodel = JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (t
+ree weight)
+
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], JLBoost.LogitLogLoss(), :__y__),
+], LogitLogLoss(), :__y__),
+              target_levels = Bool[0, 1],),
  cache = nothing,
  report = (AUC = 0.16666666666666669,
-           feature_importance = 1×4 DataFrames.DataFrame
+           feature_importance = 1×4 DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -271,27 +276,27 @@ predict(model, mljmodel.fitresult, X)
 
 
 ````
-150-element Array{Float64,1}:
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  2.0
-  ⋮  
- -2.0
- -2.0
- -2.0
- -2.0
- -2.0
- -2.0
- -2.0
- -2.0
- -2.0
+150-element Array{UnivariateFinite{Bool,UInt32,Float64},1}:
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ ⋮                                          
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
 ````
 
 
@@ -307,7 +312,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrames.DataFrame
+1×4 DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -354,20 +359,21 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.JLBoostTree[
-   -- x <= 48.46506111985791
-     -- x <= 22.538674324075213
-       ---- weight = 24.909767874932513
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-     -- x > 22.538674324075213
-       ---- weight = 70.22774285333539
+   -- x <= 49.341880371655655
+     -- x <= 21.852283847629337
+       ---- weight = 22.34869127268281
 
-   -- x > 48.46506111985791
-     -- x <= 74.58743339436928
-       ---- weight = 126.45279819799187
+     -- x > 21.852283847629337
+       ---- weight = 71.31545601878567
 
-     -- x > 74.58743339436928
-       ---- weight = 177.0348452615354
+   -- x > 49.341880371655655
+     -- x <= 73.7394674334855
+       ---- weight = 125.41086677280167
+
+     -- x > 73.7394674334855
+       ---- weight = 176.9122956952014
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -380,7 +386,22 @@ You save the models using the `JLBoost.save` and load it with the `load` functio
 
 ````julia
 JLBoost.save(xgtreemodel, "model.jlb")
+````
+
+
+````
+testing save
+````
+
+
+
+````julia
 JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+````
+
+
+````
+testing save
 ````
 
 
@@ -393,6 +414,7 @@ JLBoost.load("model_tree.jlb")
 
 ````
 Tree 1
+eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
