@@ -199,7 +199,7 @@ unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 There is integration with the MLJ.jl modelling framework
 
 ````julia
-using MLJ, MLJBase, JLBoostMLJ
+using MLJ, MLJBase, JLBoostmlj
 X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 model = JLBoostClassifier()
