@@ -1,9 +1,11 @@
 module JLBoostTrees
 
-import Base: show, *, print, println, +
+import Base: show, *, print, println, +, getproperty
+import Base: vcat
 
 export JLBoostTree, JLBoostTreeModel, show, trees
 export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println, vcat
+export getproperty
 
 abstract type AbstractJLBoostTree end
 
@@ -20,7 +22,7 @@ Return the tree
 """
 trees(jlt::JLBoostTreeModel) = jlt.jlt
 
-import Base: vcat
+
 
 +(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
 	v3 = deepcopy(v1)
@@ -43,7 +45,7 @@ mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
 	eta::Number
 end
 
-getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
+Base.getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
 	if sym == :eta
 		return getfield(jlt, :eta)
 	elseif sym == :tree

@@ -1,3 +1,7 @@
+# v0.1.4
+* Updated to MLJBase
+* Getting ready for JLBoostMLJ migration
+
 ## v0.1.3
 Supporting DataFrames v0.20
 
