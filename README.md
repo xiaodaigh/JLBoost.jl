@@ -39,15 +39,14 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
-ree[eta = 1.0 (tree weight)
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], JLBoost.LogitLogLoss(), :is_setosa)
+], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -62,7 +61,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{JLBoost.JLBoostTrees.AbstractJLBoostTree,1}
+Array{AbstractJLBoostTree,1}
 ````
 
 
@@ -73,7 +72,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-JLBoost.LogitLogLoss
+LogitLogLoss
 ````
 
 
@@ -98,8 +97,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
-ree[eta = 1.0 (tree weight)
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
@@ -121,7 +119,7 @@ ree[eta = 1.0 (tree weight)
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], JLBoost.LogitLogLoss(), :is_setosa)
+], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -196,115 +194,6 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
-#### MLJ.jl
-
-There is integration with the MLJ.jl modelling framework
-
-````julia
-using MLJ, MLJBase, JLBoostMLJ
-X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
-
-model = JLBoostClassifier()
-````
-
-
-````
-JLBoostMLJ.JLBoostClassifier(loss = JLBoost.LogitLogLoss(),
-                             nrounds = 1,
-                             subsample = 1.0,
-                             eta = 1.0,
-                             max_depth = 6,
-                             min_child_weight = 1.0,
-                             lambda = 0.0,
-                             gamma = 0.0,
-                             colsample_bytree = 1,) @ 5…47
-````
-
-
-
-````julia
-mljmodel = fit(model, 1, X, y)
-````
-
-
-````
-Choosing a split on SepalLength
-Choosing a split on SepalWidth
-Choosing a split on PetalLength
-Choosing a split on PetalWidth
-Choosing a split on pred1
-Choosing a split on pred2
-Choosing a split on pred1_plus_2
-(feature = :PetalLength, split_at = 1.9, cutpt = 50, gain = 133.33333333333
-334, lweight = 2.0, rweight = -2.0)
-Choosing a split on SepalLength
-Choosing a split on SepalWidth
-Choosing a split on PetalLength
-Choosing a split on PetalWidth
-Choosing a split on pred1
-Choosing a split on pred2
-Choosing a split on pred1_plus_2
-Choosing a split on SepalLength
-Choosing a split on SepalWidth
-Choosing a split on PetalLength
-Choosing a split on PetalWidth
-Choosing a split on pred1
-Choosing a split on pred2
-Choosing a split on pred1_plus_2
-(fitresult = (treemodel = JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLB
-oostTrees.AbstractJLBoostTree[eta = 1.0 (tree weight)
-
-   -- PetalLength <= 1.9
-     ---- weight = 2.0
-
-   -- PetalLength > 1.9
-     ---- weight = -2.0
-], JLBoost.LogitLogLoss(), :__y__),
-              target_levels = Bool[0, 1],),
- cache = nothing,
- report = (AUC = 0.16666666666666669,
-           feature_importance = 1×4 DataFrame
-│ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
-│     │ Symbol      │ Float64      │ Float64  │ Float64   │
-├─────┼─────────────┼──────────────┼──────────┼───────────┤
-│ 1   │ PetalLength │ 1.0          │ 1.0      │ 1.0       │,),)
-````
-
-
-
-````julia
-predict(model, mljmodel.fitresult, X)
-````
-
-
-````
-150-element Array{MLJBase.UnivariateFinite{Bool,UInt32,Float64},1}:
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- UnivariateFinite(false=>0.881, true=>0.119)
- ⋮                                          
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
- UnivariateFinite(false=>0.119, true=>0.881)
-````
-
-
-
-
-
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
@@ -361,22 +250,21 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
-ree[eta = 1.0 (tree weight)
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 51.48214045186887
-     -- x <= 27.492582678766
-       ---- weight = 32.88952190755621
+   -- x <= 50.739006337211066
+     -- x <= 22.129874735617385
+       ---- weight = 17.995981045329234
 
-     -- x > 27.492582678766
-       ---- weight = 84.71163799544998
+     -- x > 22.129874735617385
+       ---- weight = 74.50569562143502
 
-   -- x > 51.48214045186887
-     -- x <= 73.26065481170457
-       ---- weight = 123.56616453619147
+   -- x > 50.739006337211066
+     -- x <= 77.53675117546179
+       ---- weight = 135.05214723662354
 
-     -- x > 73.26065481170457
-       ---- weight = 171.5971710186255
+     -- x > 77.53675117546179
+       ---- weight = 177.3042449191298
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -468,6 +356,84 @@ rm("iris.jdf", force=true, recursive=true)
 
 
 
+
+<!-- #### MLJ.jl
+
+There is integration with the MLJ.jl modelling framework
+
+````julia
+using MLJ, MLJBase, JLBoostMLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+model = JLBoostClassifier()
+````
+
+
+````
+JLBoostClassifier(
+    loss = LogitLogLoss(),
+    nrounds = 1,
+    subsample = 1.0,
+    eta = 1.0,
+    max_depth = 6,
+    min_child_weight = 1.0,
+    lambda = 0.0,
+    gamma = 0.0,
+    colsample_bytree = 1) @ 8…87
+````
+
+
+
+````julia
+mljmodel = fit(model, 1, X, y)
+````
+
+
+````
+Choosing a split on SepalLength
+Choosing a split on SepalWidth
+Choosing a split on PetalLength
+Choosing a split on PetalWidth
+Choosing a split on pred1
+Choosing a split on pred2
+(feature = :PetalLength, split_at = 1.9, cutpt = 50, gain = 133.33333333333
+334, lweight = 2.0, rweight = -2.0)
+Choosing a split on SepalLength
+Choosing a split on SepalWidth
+Choosing a split on PetalLength
+Choosing a split on PetalWidth
+Choosing a split on pred1
+Choosing a split on pred2
+Choosing a split on SepalLength
+Choosing a split on SepalWidth
+Choosing a split on PetalLength
+Choosing a split on PetalWidth
+Choosing a split on pred1
+Choosing a split on pred2
+(fitresult = (treemodel = JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (t
+ree weight)
+
+   -- PetalLength <= 1.9
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+], LogitLogLoss(), :__y__),
+              target_levels = Bool[0, 1],),
+ cache = nothing,
+ report = (AUC = 0.16666666666666669,
+           feature_importance = 1×4 DataFrame
+│ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
+│     │ Symbol      │ Float64      │ Float64  │ Float64   │
+├─────┼─────────────┼──────────────┼──────────┼───────────┤
+│ 1   │ PetalLength │ 1.0          │ 1.0      │ 1.0       │,),)
+````
+
+
+
+
+predict(model, mljmodel.fitresult, X)
+``` -->
 
 ## Notes
 
