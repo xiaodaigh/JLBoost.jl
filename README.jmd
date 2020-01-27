@@ -79,25 +79,6 @@ new_tree = 0.3 * trees(xgtreemodel)[1] # weight the first tree by 30%
 unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 ```
 
-#### MLJ.jl
-
-There is integration with the MLJ.jl modelling framework
-
-```julia
-using MLJ, MLJBase, JLBoostmjl
-X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
-
-model = JLBoostClassifier()
-```
-
-```julia
-mljmodel = fit(model, 1, X, y)
-```
-
-```julia
-predict(model, mljmodel.fitresult, X)
-```
-
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
@@ -182,6 +163,25 @@ gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 # clean up
 rm("iris.jdf", force=true, recursive=true)
 ```
+
+<!-- #### MLJ.jl
+
+There is integration with the MLJ.jl modelling framework
+
+```julia
+using MLJ, MLJBase, JLBoostMLJ
+X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
+
+model = JLBoostClassifier()
+```
+
+```julia
+mljmodel = fit(model, 1, X, y)
+```
+
+```julia
+predict(model, mljmodel.fitresult, X)
+``` -->
 
 ## Notes
 
