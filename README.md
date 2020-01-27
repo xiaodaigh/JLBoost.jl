@@ -39,14 +39,15 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -61,7 +62,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{AbstractJLBoostTree,1}
+Array{JLBoost.JLBoostTrees.AbstractJLBoostTree,1}
 ````
 
 
@@ -72,7 +73,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-LogitLogLoss
+JLBoost.LogitLogLoss
 ````
 
 
@@ -97,7 +98,8 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
@@ -119,7 +121,7 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -199,7 +201,7 @@ unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 There is integration with the MLJ.jl modelling framework
 
 ````julia
-using MLJ, MLJBase, JLBoostmlj
+using MLJ, MLJBase, JLBoostMLJ
 X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
 
 model = JLBoostClassifier()
@@ -207,15 +209,15 @@ model = JLBoostClassifier()
 
 
 ````
-JLBoostClassifier(loss = LogitLogLoss(),
-                  nrounds = 1,
-                  subsample = 1.0,
-                  eta = 1.0,
-                  max_depth = 6,
-                  min_child_weight = 1.0,
-                  lambda = 0.0,
-                  gamma = 0.0,
-                  colsample_bytree = 1,) @ 7…50
+JLBoostMLJ.JLBoostClassifier(loss = JLBoost.LogitLogLoss(),
+                             nrounds = 1,
+                             subsample = 1.0,
+                             eta = 1.0,
+                             max_depth = 6,
+                             min_child_weight = 1.0,
+                             lambda = 0.0,
+                             gamma = 0.0,
+                             colsample_bytree = 1,) @ 5…47
 ````
 
 
@@ -249,15 +251,15 @@ Choosing a split on PetalWidth
 Choosing a split on pred1
 Choosing a split on pred2
 Choosing a split on pred1_plus_2
-(fitresult = (treemodel = JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (t
-ree weight)
+(fitresult = (treemodel = JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLB
+oostTrees.AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :__y__),
+], JLBoost.LogitLogLoss(), :__y__),
               target_levels = Bool[0, 1],),
  cache = nothing,
  report = (AUC = 0.16666666666666669,
@@ -276,7 +278,7 @@ predict(model, mljmodel.fitresult, X)
 
 
 ````
-150-element Array{UnivariateFinite{Bool,UInt32,Float64},1}:
+150-element Array{MLJBase.UnivariateFinite{Bool,UInt32,Float64},1}:
  UnivariateFinite(false=>0.881, true=>0.119)
  UnivariateFinite(false=>0.881, true=>0.119)
  UnivariateFinite(false=>0.881, true=>0.119)
@@ -359,21 +361,22 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
-   -- x <= 49.341880371655655
-     -- x <= 21.852283847629337
-       ---- weight = 22.34869127268281
+   -- x <= 51.48214045186887
+     -- x <= 27.492582678766
+       ---- weight = 32.88952190755621
 
-     -- x > 21.852283847629337
-       ---- weight = 71.31545601878567
+     -- x > 27.492582678766
+       ---- weight = 84.71163799544998
 
-   -- x > 49.341880371655655
-     -- x <= 73.7394674334855
-       ---- weight = 125.41086677280167
+   -- x > 51.48214045186887
+     -- x <= 73.26065481170457
+       ---- weight = 123.56616453619147
 
-     -- x > 73.7394674334855
-       ---- weight = 176.9122956952014
+     -- x > 73.26065481170457
+       ---- weight = 171.5971710186255
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
