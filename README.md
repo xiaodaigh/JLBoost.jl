@@ -203,7 +203,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrame
+1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -252,19 +252,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 50.739006337211066
-     -- x <= 22.129874735617385
-       ---- weight = 17.995981045329234
+   -- x <= 50.67216765569669
+     -- x <= 20.7519029721271
+       ---- weight = 21.90449570389306
 
-     -- x > 22.129874735617385
-       ---- weight = 74.50569562143502
+     -- x > 20.7519029721271
+       ---- weight = 68.4416509399934
 
-   -- x > 50.739006337211066
-     -- x <= 77.53675117546179
-       ---- weight = 135.05214723662354
+   -- x > 50.67216765569669
+     -- x <= 74.37751414042637
+       ---- weight = 126.44291929735955
 
-     -- x > 77.53675117546179
-       ---- weight = 177.3042449191298
+     -- x > 74.37751414042637
+       ---- weight = 176.27810742421687
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -357,7 +357,7 @@ rm("iris.jdf", force=true, recursive=true)
 
 
 
-<!-- #### MLJ.jl
+#### MLJ.jl
 
 There is integration with the MLJ.jl modelling framework
 
@@ -379,7 +379,7 @@ JLBoostClassifier(
     min_child_weight = 1.0,
     lambda = 0.0,
     gamma = 0.0,
-    colsample_bytree = 1) @ 8…87
+    colsample_bytree = 1) @ 1…56
 ````
 
 
@@ -422,7 +422,7 @@ ree weight)
               target_levels = Bool[0, 1],),
  cache = nothing,
  report = (AUC = 0.16666666666666669,
-           feature_importance = 1×4 DataFrame
+           feature_importance = 1×4 DataFrames.DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -431,9 +431,38 @@ ree weight)
 
 
 
-
+````julia
 predict(model, mljmodel.fitresult, X)
-``` -->
+````
+
+
+````
+150-element Array{MLJBase.UnivariateFinite{Bool,UInt32,Float64},1}:
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ UnivariateFinite(false=>0.881, true=>0.119)
+ ⋮                                          
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+ UnivariateFinite(false=>0.119, true=>0.881)
+````
+
+
+
+
 
 ## Notes
 
