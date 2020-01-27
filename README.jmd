@@ -164,7 +164,7 @@ gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 rm("iris.jdf", force=true, recursive=true)
 ```
 
-<!-- #### MLJ.jl
+#### MLJ.jl
 
 There is integration with the MLJ.jl modelling framework
 
@@ -181,7 +181,7 @@ mljmodel = fit(model, 1, X, y)
 
 ```julia
 predict(model, mljmodel.fitresult, X)
-``` -->
+```
 
 ## Notes
 
