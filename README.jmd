@@ -3,9 +3,10 @@
 This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT) based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decision Tree (GBDT).
 
 ## Limitations for now
-* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
-* Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
-* Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
+* Currently, `Union{T, Missing}` feature type is not supported, but is *planned*.
+* Currently, only the single-valued models are supported. Multivariate-target models support is *planned*.
+* Currently, only the numeric and boolean features are supported. Categorical support is *planned*.
+* Currently, weights cannot be provided for each of the records. Support is *planned*.
 
 ## Objectives
 * A full-featured & batteries included Gradient Boosting Regression Tree library
