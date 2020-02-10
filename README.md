@@ -3,9 +3,10 @@
 This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT) based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decision Tree (GBDT).
 
 ## Limitations for now
-* Currently, `Union{T, Missing}` feature type is not supported, but are *planned*.
-* Currently, only the single-valued models are supported. Multivariate-target models support are *planned*.
-* Currently, only the numeric and boolean features are supported. Categorical support are *planned*.
+* Currently, `Union{T, Missing}` feature type is not supported, but is *planned*.
+* Currently, only the single-valued models are supported. Multivariate-target models support is *planned*.
+* Currently, only the numeric and boolean features are supported. Categorical support is *planned*.
+* Currently, weights cannot be provided for each of the records. Support is *planned*.
 
 ## Objectives
 * A full-featured & batteries included Gradient Boosting Regression Tree library
@@ -252,19 +253,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 50.67216765569669
-     -- x <= 20.7519029721271
-       ---- weight = 21.90449570389306
+   -- x <= 49.6406724117153
+     -- x <= 24.01387843539775
+       ---- weight = 27.382088358912977
 
-     -- x > 20.7519029721271
-       ---- weight = 68.4416509399934
+     -- x > 24.01387843539775
+       ---- weight = 72.61684427644157
 
-   -- x > 50.67216765569669
-     -- x <= 74.37751414042637
-       ---- weight = 126.44291929735955
+   -- x > 49.6406724117153
+     -- x <= 76.33176194242172
+       ---- weight = 127.94340616384319
 
-     -- x > 74.37751414042637
-       ---- weight = 176.27810742421687
+     -- x > 76.33176194242172
+       ---- weight = 181.7027938439467
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -379,7 +380,7 @@ JLBoostClassifier(
     min_child_weight = 1.0,
     lambda = 0.0,
     gamma = 0.0,
-    colsample_bytree = 1) @ 1…56
+    colsample_bytree = 1) @ 1…30
 ````
 
 
