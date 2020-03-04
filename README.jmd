@@ -167,22 +167,7 @@ rm("iris.jdf", force=true, recursive=true)
 
 #### MLJ.jl
 
-There is integration with the MLJ.jl modelling framework
-
-```julia
-using MLJ, MLJBase, JLBoostMLJ
-X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
-
-model = JLBoostClassifier()
-```
-
-```julia
-mljmodel = fit(model, 1, X, y)
-```
-
-```julia
-predict(model, mljmodel.fitresult, X)
-```
+Integration with MLJ.jl is available via the [JLBoostMLJ.jl](https://github.com/xiaodaigh/JLBoostMLJ.jl) package
 
 ## Notes
 

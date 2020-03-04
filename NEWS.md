@@ -1,3 +1,6 @@
+# v0.1.7
+Support Table v1
+
 # v0.1.4
 * Updated to MLJBase
 * Getting ready for JLBoostmlj migration

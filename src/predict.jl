@@ -1,8 +1,12 @@
 import StatsBase: predict
 
+import DataFrames: AbstractDataFrame, DataFrame
+
 export predict
 
 predict(jlt::JLBoostTreeModel, df) = predict(trees(jlt), df)
+
+predict(jlt::JLBoostTreeModel, df::AbstractDataFrame) = predict(trees(jlt), df)
 
 function predict(jlt::AbstractJLBoostTree, df)
 	# TODO a more efficient algorithm. Currently there are too many assignbools being
@@ -16,7 +20,7 @@ function predict(jlt::AbstractJLBoostTree, df)
     predict!(jlt, df, res, assignbool)
 end
 
-function predict(jlts, df) where T <: AbstractJLBoostTree
+function predict(jlts, df)
 	mapreduce(x->predict(x, df), +, jlts)
 end
 
