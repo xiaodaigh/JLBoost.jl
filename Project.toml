@@ -24,7 +24,7 @@ MLJBase = "0.12"
 MappedArrays = "0.2"
 Missings = "0.4"
 SortingLab = "^0.2.1"
-StatsBase = "0.32"
+StatsBase = "0.32, 0.33"
 Tables = "1"
 julia = "1"
 
