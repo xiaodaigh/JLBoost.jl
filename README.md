@@ -149,7 +149,7 @@ iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
   5.135335283236616
   5.135335283236613
   5.135335283236616
-  ⋮                
+  ⋮
  -5.135335283236611
  -5.135335283236611
  -5.135335283236611
@@ -256,19 +256,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
-   -- x <= 48.283343693218825
-     -- x <= 18.73146586262955
-       ---- weight = 18.002994646145044
+   -- x <= 44.4379991667178
+     -- x <= 23.37486228930492
+       ---- weight = 26.202932309423243
 
-     -- x > 18.73146586262955
-       ---- weight = 74.22880874446642
+     -- x > 23.37486228930492
+       ---- weight = 70.14200049354278
 
-   -- x > 48.283343693218825
-     -- x <= 71.22734176316905
-       ---- weight = 121.32319669221208
+   -- x > 44.4379991667178
+     -- x <= 69.1144028107975
+       ---- weight = 112.20011915070252
 
-     -- x > 71.22734176316905
-       ---- weight = 168.4907448578233
+     -- x > 69.1144028107975
+       ---- weight = 174.87732294614628
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 

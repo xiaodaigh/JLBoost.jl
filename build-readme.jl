@@ -5,6 +5,7 @@ Pkg.activate("c:/git/JLBoost")
 Pkg.add("Weave")
 Pkg.add("RDatasets")
 Pkg.add("JDF") # needed for table check
+Pkg.update()
 #Pkg.add("MLJ")  needed for table check
 #Pkg.add("JLBoostMLJ") # needed for table check
 
