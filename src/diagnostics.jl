@@ -1,11 +1,11 @@
-export AUC, gini, CrossEntropy
+export AUC, gini#, CrossEntropy
 
 using DataFrames: by, DataFrame, sort!
 using CategoricalArrays: CategoricalVector
 
-import MLJBase: CrossEntropy
-
-CrossEntropy(x, y::CategoricalVector) = CrossEntropy(x, y.refs .- 1)
+# import MLJBase: CrossEntropy
+#
+# CrossEntropy(x, y::CategoricalVector) = CrossEntropy(x, y.refs .- 1)
 
 
 function AUC_plot_data(score, target::CategoricalVector;  kwargs...)
