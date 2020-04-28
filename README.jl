@@ -1,3 +1,4 @@
+
 using JLBoost, RDatasets
 iris = dataset("datasets", "iris")
 
@@ -22,11 +23,10 @@ typeof(xgtreemodel.target)
 
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
-iris.pred1 = JLBoost.predict(xgtreemodel, iris)
-iris.pred2 = JLBoost.predict(xgtreemodel2, iris)
-iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
 
-@which JLBoost.predict(xgtreemodel, iris)
+iris.pred1 = predict(xgtreemodel, iris)
+iris.pred2 = predict(xgtreemodel2, iris)
+iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
 
 
 AUC(-iris.pred1, iris.is_setosa)
@@ -95,14 +95,3 @@ gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 # clean up
 rm("iris.jdf", force=true, recursive=true)
 
-
-using MLJ, JLBoostMLJ
-X, y = unpack(iris, x->!(x in [:is_setosa, :Species]), ==(:is_setosa))
-
-model = JLBoostClassifier()
-
-
-mljmodel = fit(model, 1, X, y)
-
-
-predict(model, mljmodel.fitresult, X)

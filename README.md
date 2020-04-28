@@ -256,19 +256,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
-   -- x <= 44.4379991667178
-     -- x <= 23.37486228930492
-       ---- weight = 26.202932309423243
+   -- x <= 50.38070647013966
+     -- x <= 24.051128915239396
+       ---- weight = 27.463496987823515
 
-     -- x > 23.37486228930492
-       ---- weight = 70.14200049354278
+     -- x > 24.051128915239396
+       ---- weight = 73.38026831845751
 
-   -- x > 44.4379991667178
-     -- x <= 69.1144028107975
-       ---- weight = 112.20011915070252
+   -- x > 50.38070647013966
+     -- x <= 76.82108742141476
+       ---- weight = 132.23774599682923
 
-     -- x > 69.1144028107975
-       ---- weight = 174.87732294614628
+     -- x > 76.82108742141476
+       ---- weight = 177.58536465188024
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
