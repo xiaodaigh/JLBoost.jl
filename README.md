@@ -31,7 +31,7 @@ iris = dataset("datasets", "iris")
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
 target = :is_setosa
 
-features = setdiff(names(iris), [:Species, :is_setosa])
+features = setdiff(names(iris), ["Species", "is_setosa"])
 
 # fit one tree
 # ?jlboost for more details
@@ -256,19 +256,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
-   -- x <= 50.38070647013966
-     -- x <= 24.051128915239396
-       ---- weight = 27.463496987823515
+   -- x <= 46.07761747428365
+     -- x <= 22.493453712311705
+       ---- weight = 22.06167856031987
 
-     -- x > 24.051128915239396
-       ---- weight = 73.38026831845751
+     -- x > 22.493453712311705
+       ---- weight = 70.764571445244
 
-   -- x > 50.38070647013966
-     -- x <= 76.82108742141476
-       ---- weight = 132.23774599682923
+   -- x > 46.07761747428365
+     -- x <= 72.6492180215106
+       ---- weight = 122.21602085473259
 
-     -- x > 76.82108742141476
-       ---- weight = 177.58536465188024
+     -- x > 72.6492180215106
+       ---- weight = 178.71704825126568
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -369,4 +369,7 @@ Integration with MLJ.jl is available via the [JLBoostMLJ.jl](https://github.com/
 
 Currently has a CPU implementation of the `xgboost` binary boosting algorithm as described in the original paper. I am trying to implement the algorithms in the original `xgboost` paper. I want to implement the algorithms mentioned in LigthGBM and Catboost and to port them to GPUs.
 
-There is a similar project called [JuML.jl](https://github.com/Statfactory/JuML.jl).
+There are two similar projects
+
+* [EvoTrees.jl](https://github.com/Evovest/EvoTrees.jl)
+* [JuML.jl](https://github.com/Statfactory/JuML.jl)

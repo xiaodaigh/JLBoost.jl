@@ -1,5 +1,6 @@
 # Weave readme
 using Pkg
+cd("c:/git/JLBoost")
 Pkg.activate("c:/git/JLBoost")
 
 Pkg.add("Weave")

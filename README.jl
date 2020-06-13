@@ -5,7 +5,7 @@ iris = dataset("datasets", "iris")
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
 target = :is_setosa
 
-features = setdiff(names(iris), [:Species, :is_setosa])
+features = setdiff(names(iris), ["Species", "is_setosa"])
 
 # fit one tree
 # ?jlboost for more details

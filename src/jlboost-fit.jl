@@ -26,22 +26,28 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 * monotone_contraints: Not yet implemented
 * interaction_constraints: Not yet implemented
 """
-function jlboost(df, target::Symbol; kwargs...)
-	jlboost(df, target, setdiff(names(df), [target]), fill(0.0, nrow(df)); kwargs...)
+function jlboost(df, target::Union{Symbol, String}; kwargs...)
+    target = Symbol(target)
+	jlboost(df, target, setdiff(Tables.columnnames(df), [target]), fill(0.0, nrow(df)); kwargs...)
 end
 
-function jlboost(df, target::Symbol, warm_start::AbstractVector; kwargs...)
+function jlboost(df, target::Union{Symbol, String}, warm_start::AbstractVector; kwargs...)
+    target = Symbol(target)
 	jlboost(df, target, setdiff(names(df), [target]), warm_start)
 end
 
-function jlboost(df, target::Symbol, features::AbstractVector{Symbol}; kwargs...)
+function jlboost(df, target::Union{Symbol, String}, features::AbstractVector; kwargs...)
+    target = Symbol(target)
+    features = Symbol.(features)
 	jlboost(df, target, features, fill(0.0, nrow(df)); kwargs...)
 end
 
-function jlboost(df, target::Symbol, features::AbstractVector{Symbol}, warm_start::AbstractVector, loss = LogitLogLoss();
+function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, warm_start::AbstractVector, loss = LogitLogLoss();
 	nrounds = 1, subsample = 1, eta = 1.0, verbose =false, colsample_bytree = 1, kwargs...)
 	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
 	#, ,  colsample_bynode = 1,
+    target = Symbol(target)
+    features = Symbol.(features)
 
 	@assert nrounds >= 1
 	@assert subsample <= 1 && subsample > 0

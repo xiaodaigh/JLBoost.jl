@@ -1,3 +1,6 @@
+# v0.1.11
+Support DataFrames.jl 0.21
+
 # v0.1.7
 Support Table v1
 
