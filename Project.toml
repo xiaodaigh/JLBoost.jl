@@ -1,7 +1,7 @@
 name = "JLBoost"
 uuid = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
 authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
-version = "0.1.11"
+version = "0.1.12"
 
 [deps]
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
