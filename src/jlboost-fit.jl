@@ -31,7 +31,7 @@ function jlboost(df, target::Union{Symbol, String}; kwargs...)
 	jlboost(df, target, setdiff(Tables.columnnames(df), [target]), fill(0.0, nrow(df)); kwargs...)
 end
 
-function jlboost(df, target::Union{Symbol, String}, warm_start::AbstractVector{T}; kwargs...) where T <: Numbers
+function jlboost(df, target::Union{Symbol, String}, warm_start::AbstractVector{T}; kwargs...) where T <: Number
     target = Symbol(target)
 	jlboost(df, target, setdiff(names(df), [target]), warm_start)
 end

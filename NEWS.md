@@ -1,3 +1,6 @@
+# v0.1.12
+Minor bug fix for jlboost
+
 # v0.1.11
 Support DataFrames.jl 0.21
 
