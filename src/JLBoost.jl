@@ -16,7 +16,7 @@ export LogitLogloss, value, deriv, deriv2, trees
 export JLBoostTreeModel, JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 export getproperty, AbstractJLBoostTree, predict
 
-include("traitwrappers.jl")
+# include("traitwrappers.jl")
 
 include("JLBoostTree.jl");
 using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,

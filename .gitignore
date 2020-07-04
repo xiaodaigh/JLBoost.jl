@@ -9,3 +9,5 @@
 
 *.jlb
 *.code-workspace
+jlboost-dev/Manifest.toml
+jlboost-dev/Project.toml
