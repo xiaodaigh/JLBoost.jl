@@ -40,6 +40,12 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
+weight = 0.0
+
+ weight = 2.0
+
+ weight = -2.0
+
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -98,6 +104,18 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
+weight = 0.0
+
+ weight = 2.0
+
+ weight = -2.0
+
+ weight = 0.0
+
+ weight = 1.1353352832366148
+
+ weight = -1.135335283236615
+
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -204,7 +222,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrames.DataFrame
+1×4 DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -251,21 +269,27 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
+weight = 0.0
+
+ weight = 44.612004002983845
+
+ weight = 154.6983342417642
+
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 49.258647300784666
-     -- x <= 23.76302754656663
-       ---- weight = 23.039445731037162
+   -- x <= 46.536465154493165
+     -- x <= 23.839977189260676
+       ---- weight = 24.1331870564934
 
-     -- x > 23.76302754656663
-       ---- weight = 78.09316731600033
+     -- x > 23.839977189260676
+       ---- weight = 77.6056535278851
 
-   -- x > 49.258647300784666
-     -- x <= 75.28834840706557
-       ---- weight = 127.88683463738761
+   -- x > 46.536465154493165
+     -- x <= 75.23969920009097
+       ---- weight = 127.98866514146513
 
-     -- x > 75.28834840706557
-       ---- weight = 175.58462627687527
+     -- x > 75.23969920009097
+       ---- weight = 175.1757472186601
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -338,8 +362,41 @@ irisdisk = JDFFile("iris.jdf")
 
 # fit using on disk JDF format
 xgtree1 = jlboost(irisdisk, target, features)
-xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
+````
 
+
+````
+weight = 0.0
+
+ weight = 2.0
+
+ weight = -2.0
+````
+
+
+
+````julia
+xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
+````
+
+
+````
+weight = 0.0
+
+ weight = 2.0
+
+ weight = -2.0
+
+ weight = 0.0
+
+ weight = 1.1353352832366148
+
+ weight = -1.135335283236615
+````
+
+
+
+````julia
 # predict using on disk JDF format
 iris.pred1 = predict(xgtree1, irisdisk)
 iris.pred2 = predict(xgtree2, irisdisk)

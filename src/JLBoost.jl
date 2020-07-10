@@ -18,14 +18,15 @@ export getproperty, AbstractJLBoostTree, predict
 
 # include("traitwrappers.jl")
 
-include("JLBoostTree.jl");
+include("JLBoostTree/JLBoostTree.jl");
 using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
-    JLBoostTreeModel, trees, vcat, getproperty
+    JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes
 
 
 include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")
+include("tree-growth.jl")
 include("fit_tree.jl")
 include("predict.jl")
 include("save.jl")
