@@ -46,14 +46,15 @@ weight = 0.0
 
  weight = -2.0
 
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
 
    -- PetalLength > 1.9
      ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -68,7 +69,7 @@ typeof(trees(xgtreemodel))
 
 
 ````
-Array{AbstractJLBoostTree,1}
+Array{JLBoost.JLBoostTrees.AbstractJLBoostTree,1}
 ````
 
 
@@ -79,7 +80,7 @@ typeof(xgtreemodel.loss)
 
 
 ````
-LogitLogLoss
+JLBoost.LogitLogLoss
 ````
 
 
@@ -116,7 +117,8 @@ weight = 0.0
 
  weight = -1.135335283236615
 
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      ---- weight = 2.0
@@ -138,7 +140,7 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
      -- SepalLength > 7.9
        ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
+], JLBoost.LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -271,25 +273,26 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 weight = 0.0
 
- weight = 44.612004002983845
+ weight = 50.06342400343052
 
- weight = 154.6983342417642
+ weight = 156.1952974377748
 
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
-   -- x <= 46.536465154493165
-     -- x <= 23.839977189260676
-       ---- weight = 24.1331870564934
+   -- x <= 50.478723530472514
+     -- x <= 25.1721545344026
+       ---- weight = 29.30185240406779
 
-     -- x > 23.839977189260676
-       ---- weight = 77.6056535278851
+     -- x > 25.1721545344026
+       ---- weight = 75.15032301932716
 
-   -- x > 46.536465154493165
-     -- x <= 75.23969920009097
-       ---- weight = 127.98866514146513
+   -- x > 50.478723530472514
+     -- x <= 77.23351235222118
+       ---- weight = 132.62055111726195
 
-     -- x > 75.23969920009097
-       ---- weight = 175.1757472186601
+     -- x > 77.23351235222118
+       ---- weight = 180.79503272874493
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 

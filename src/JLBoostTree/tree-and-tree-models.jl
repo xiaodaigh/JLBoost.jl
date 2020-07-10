@@ -1,18 +1,19 @@
-abstract type AbstractJLBoostTree end
+using AbstractTrees: AbstractShadowTree
+
+abstract type AbstractJLBoostTree <: AbstractShadowTree end
 
 mutable struct JLBoostTreeModel
 	jlt::Vector
-	loss
+	loss # this should be a function with deriv defined
 	target::Symbol
 end
 
 """
 	trees(jlt::JLBoostTreeModel)
 
-Return the tree
+Return the trees from a tree-model
 """
 trees(jlt::JLBoostTreeModel) = jlt.jlt
-
 
 
 +(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin

@@ -1,10 +1,14 @@
 export jlboost!, jlboost
 
+using ..ColumnSampleStrategy: NoSample, ColumnSimpleRandomSample
 using DataFrames: nrow, ncol
 using Tables
 
 """
-	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)), warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
+    jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)),
+        warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0,
+        max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1,
+        verbose = false)
 
 Fit a tree boosting model with a DataFrame, df, and target symbol and allowed features.
 
@@ -66,13 +70,15 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, wa
 	end
 
     # a sample of the features
-	if colsample_bytree < 1
-		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-	else
-		features_sample = features
-	end
+    if colsample_bytree < 1
+        col_sampling_bytree_strategy = ColumnSimpleRandomSample(colsample_bytree)
 
-    # subsample some column
+    else
+        col_sampling_bytree_strategy = NoSample()
+    end
+    features_sample = sample(features, col_sampling_bytree_strategy)
+
+    # subsample (row sampling) some column
 	if subsample == 1
 		warm_start = fill(0.0, nrow(df))
 		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
@@ -88,13 +94,9 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, wa
 		if verbose
 			println("Fitting tree #$(nround)")
 		end
-		# assign the previous weight
 
-		if colsample_bytree < 1
-			features_sample = sample(features, ceil(Int, length(features)*colsample_bytree); replace = true)
-		else
-			features_sample = features
-		end
+        # sample new columns
+		features_sample = sample(features, col_sampling_bytree_strategy)
 
 		if subsample == 1
 			warm_start = predict(res_jlt[1:nrounds-1], df)
