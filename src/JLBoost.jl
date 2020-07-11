@@ -29,7 +29,12 @@ include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")
 include("tree-growth.jl")
+
+
+inlcude("fit_tree_stopping_criterion.jl")
+using ..TreeFitStoppingCriterions: max_depth
 include("fit_tree.jl")
+
 include("predict.jl")
 include("save.jl")
 include("jlboost-fit.jl")

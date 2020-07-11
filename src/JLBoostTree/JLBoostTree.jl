@@ -11,5 +11,6 @@ include("tree-and-tree-models.jl")
 include("children.jl")
 include("get_leaf_nodes.jl")
 include("traits.jl")
+include("treedepth.jl")
 
 end # end module

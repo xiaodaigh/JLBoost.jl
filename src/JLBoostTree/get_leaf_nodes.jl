@@ -12,12 +12,12 @@ function get_leaf_nodes(jlt::AbstractJLBoostTree)
 end
 
 function get_leaf_nodes!(leaf_nodes::Vector{AbstractJLBoostTree}, jlt::AbstractJLBoostTree)
-    if length(jlt.children) == 0
-        push!(leaf_nodes, jlt)
-    else
-        for child in jlt.children
+    if has_children(jlt.children)
+        for child in children(jlt)
             get_leaf_nodes!(leaf_nodes, child)
         end
+    else
+        push!(leaf_nodes, jlt)
     end
     leaf_nodes
 end
