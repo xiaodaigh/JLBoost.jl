@@ -4,7 +4,10 @@ using DataFrames: nrow, ncol
 using Tables
 
 """
-	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)), warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
+    jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)),
+        warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0,
+        max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1,
+        verbose = false)
 
 Fit a tree boosting model with a DataFrame, df, and target symbol and allowed features.
 
@@ -20,7 +23,7 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 * max_depth: the maximum depth of each tree
 * subsample: 0-1, the proportion of rows to subsample for each tree build
 * verbose: Print more information
-* colsample_bytree: (0-1] The proportion of feature column to sample for each tree. This
+* colsample_bytree: (0-1] The proportion of feature column to sample for each tree.
 * min_child_weight: The weight that needs to be in each child node before a split can occur. The
     weight is the hessian (2nd derivative) of the loss function, which happens to be 1 for squares
     loss.
@@ -45,17 +48,37 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector{T};
 	jlboost(df, target, features, fill(0.0, nrow(df)); kwargs...)
 end
 
-function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, warm_start::AbstractVector, loss = LogitLogLoss();
-	nrounds = 1, subsample = 1, eta = 1.0, verbose = false, colsample_bytree = 1, kwargs...)
-	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
+function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
+    warm_start::AbstractVector, loss = LogitLogLoss();
+    colsample_bytree = 1, kwargs...)
+    # a sample of the features
+    if 0 < colsample_bytree < 1
+        col_sampling_bytree_strategy =
+            (features, args...; kwargs...) -> sample(features, floor(Int, length(features)*colsample_bytree), replace=false)
+    elseif colsample_bytree == 1
+        col_sampling_bytree_strategy = (features, args...; kwargs...) -> features
+    else
+        error("colsample_bytree must be within [0, 1)")
+    end
+
+    # TODO look at target column and provide a possible selection of loss
+    # e.g. if the target is numeric then RSMELoss is more appropriate
+    jlboost(df, target, features, warm_start, loss, col_sampling_bytree_strategy; kwargs...)
+end
+
+# the most canonical version of jlboost is here
+function jlboost(df, target, features, warm_start::AbstractVector,
+    loss, col_sampling_bytree_strategy::Function;
+	nrounds = 1, subsample = 1, eta = 1.0, verbose = false, kwargs...)
+    # eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
 	#, ,  colsample_bynode = 1,
+
+    @assert nrounds >= 1
+	@assert subsample <= 1 && subsample > 0
+	@assert Tables.istable(df)
+
     target = Symbol(target)
     features = Symbol.(features)
-
-	@assert nrounds >= 1
-	@assert subsample <= 1 && subsample > 0
-	@assert colsample_bytree <= 1 && colsample_bytree > 0
-	@assert Tables.istable(df)
 
 	dfc = Tables.columns(df)
 
@@ -65,14 +88,11 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, wa
 	 	res_jlt[i] = JLBoostTree(0.0)
 	end
 
-    # a sample of the features
-	if colsample_bytree < 1
-		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-	else
-		features_sample = features
-	end
+    features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
+                                                   nrounds=nrounds, subsample=subsample, eta=eta,
+                                                   kwargs...)
 
-    # subsample some column
+    # subsample (row sampling) some column
 	if subsample == 1
 		warm_start = fill(0.0, nrow(df))
 		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
@@ -88,13 +108,11 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, wa
 		if verbose
 			println("Fitting tree #$(nround)")
 		end
-		# assign the previous weight
 
-		if colsample_bytree < 1
-			features_sample = sample(features, ceil(Int, length(features)*colsample_bytree); replace = true)
-		else
-			features_sample = features
-		end
+        # sample new columns
+		features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
+                                                   nrounds=nrounds, subsample=subsample, eta=eta,
+                                                   kwargs...)
 
 		if subsample == 1
 			warm_start = predict(res_jlt[1:nrounds-1], df)
@@ -109,7 +127,5 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, wa
 	end
 	res_jlt
 
-	JLBoostTreeModel(res_jlt, loss, target)
+    JLBoostTreeModel(res_jlt, loss, target)
 end
-
-#_fit_tree!(loss, df, target, features, warm_start, nothing, jlt::JLBoostTree = JLBoostTree(0.0);

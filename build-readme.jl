@@ -1,16 +1,18 @@
 # Weave readme
 using Pkg
 cd("c:/git/JLBoost")
-#Pkg.activate("c:/git/JLBoost")
+Pkg.activate("c:/git/JLBoost/jlboost-test")
 
-Pkg.add("Weave")
-Pkg.add("RDatasets")
-Pkg.add("DataFrames")
-Pkg.add("JDF") # needed for table check
-Pkg.add("LossFunctions")
-Pkg.update()
-#Pkg.add("MLJ")  needed for table check
-#Pkg.add("JLBoostMLJ") # needed for table check
+if false
+    Pkg.add("Weave")
+    Pkg.add("RDatasets")
+    Pkg.add("DataFrames")
+    Pkg.add("JDF") # needed for table check
+    Pkg.add("LossFunctions")
+    Pkg.update()
+    #Pkg.add("MLJ")  needed for table check
+    #Pkg.add("JLBoostMLJ") # needed for table check
+end
 
 using Weave
 
