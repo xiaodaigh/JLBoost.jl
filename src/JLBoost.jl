@@ -22,6 +22,9 @@ include("JLBoostTree/JLBoostTree.jl");
 using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
     JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes
 
+include("column_sampling_strategies.jl")
+include("row_sampling_strategies.jl")
+
 include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")

@@ -50,31 +50,34 @@ end
 
 function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
     warm_start::AbstractVector, loss = LogitLogLoss();
-    colsample_bytree = 1, kwargs...)
-    # a sample of the features
-    if 0 < colsample_bytree < 1
-        col_sampling_bytree_strategy =
-            (features, args...; kwargs...) -> sample(features, floor(Int, length(features)*colsample_bytree), replace=false)
-    elseif colsample_bytree == 1
-        col_sampling_bytree_strategy = (features, args...; kwargs...) -> features
-    else
-        error("colsample_bytree must be within [0, 1)")
-    end
+    subsample = 1, colsample_bytree = 1, kwargs...)
+
+    @assert 0 < subsample <= 1
+    @assert 0 < colsample_bytree <= 1
+    @assert Tables.istable(df)
+
+    target = Symbol(target)
+    features = Symbol.(features)
+
+    # a sample of the rows
+    row_sampling_bytree_strategy = select_row_sampling_strategy(subsample)
+
+    # a function to sample the columns
+    col_sampling_bytree_strategy = select_col_sampling_strategy(colsample_bytree)
 
     # TODO look at target column and provide a possible selection of loss
     # e.g. if the target is numeric then RSMELoss is more appropriate
-    jlboost(df, target, features, warm_start, loss, col_sampling_bytree_strategy; kwargs...)
+    jlboost(df, target, features, warm_start, loss, row_sampling_bytree_strategy, col_sampling_bytree_strategy; kwargs...)
 end
 
 # the most canonical version of jlboost is here
 function jlboost(df, target, features, warm_start::AbstractVector,
-    loss, col_sampling_bytree_strategy::Function;
-	nrounds = 1, subsample = 1, eta = 1.0, verbose = false, kwargs...)
+    loss, row_sampling_strategy::Function, col_sampling_bytree_strategy::Function;
+	nrounds = 1, eta = 1.0, verbose = false, kwargs...)
     # eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
 	#, ,  colsample_bynode = 1,
 
     @assert nrounds >= 1
-	@assert subsample <= 1 && subsample > 0
 	@assert Tables.istable(df)
 
     target = Symbol(target)
@@ -83,47 +86,28 @@ function jlboost(df, target, features, warm_start::AbstractVector,
 	dfc = Tables.columns(df)
 
     # res_jlt = result JLBoost trees
-	res_jlt = Vector{AbstractJLBoostTree}(undef, nrounds)
-	for i in 1:nrounds
-	 	res_jlt[i] = JLBoostTree(0.0)
-	end
-
-    features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
-                                                   nrounds=nrounds, subsample=subsample, eta=eta,
-                                                   kwargs...)
-
-    # subsample (row sampling) some column
-	if subsample == 1
-		warm_start = fill(0.0, nrow(df))
-		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
-	else
-		rows = sample(1:nrow(df), round(Int, nrow(df)*subsample); replace = false)
-		warm_start = fill(0.0, length(rows))
-		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
-	end
-	res_jlt[1] = eta*deepcopy(new_jlt);
+	res_jlt = AbstractJLBoostTree[]
 
     # fit the next round
-	for nround in 2:nrounds
+	for nround in 1:nrounds
 		if verbose
 			println("Fitting tree #$(nround)")
 		end
 
         # sample new columns
 		features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
-                                                   nrounds=nrounds, subsample=subsample, eta=eta,
-                                                   kwargs...)
+                                                   nrounds=nrounds, eta=eta, kwargs...)
+        # dfs = DataFrame Sampled
+        dfs = row_sampling_strategy(dfc)
+        if nround == 1
+            warm_start = fill(0.0, nrow(dfs))
+        else
+            warm_start = predict(res_jlt[1:nrounds-1], dfs)
+        end
+        new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
 
-		if subsample == 1
-			warm_start = predict(res_jlt[1:nrounds-1], df)
-			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose, kwargs...);
-		else
-			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-			warm_start = predict(res_jlt[1:nrounds-1], view(dfc, rows, :))
-
-			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, JLBoostTree(0.0); verbose=verbose,kwargs...);
-		end
-	    res_jlt[nround] = eta*deepcopy(new_jlt)
+        # added a new round of tree
+        push!(res_jlt, eta*deepcopy(new_jlt))
 	end
 	res_jlt
 
