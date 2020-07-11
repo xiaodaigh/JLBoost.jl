@@ -40,16 +40,16 @@ Parameters:
 function _fit_tree!(loss, tbl, target, features, warm_start,
     jlt::AbstractJLBoostTree = JLBoostTree(0.0),
     col_sampling_bytree_strategy = (features, args...; kwargs...)->features,
-    tree_growth = depth_wise;
-	colsample_bytree = 1, colsample_bynode = 1, colsample_bylevel = 1, lambda = 0, gamma = 0,
-	max_depth = 6, verbose = false, kwargs...)
+    tree_growth = depth_wise; colsample_bytree = 1, lambda = 0, gamma = 0, max_depth = 6,
+    verbose = false, #colsample_bynode = 1, colsample_bylevel = 1,
+	kwargs...)
 
 	@assert colsample_bytree <= 1 && colsample_bytree > 0
-	@assert colsample_bynode <= 1 && colsample_bynode > 0
-	@assert colsample_bylevel <= 1 && colsample_bylevel > 0
+	# @assert colsample_bynode <= 1 && colsample_bynode > 0
+	# @assert colsample_bylevel <= 1 && colsample_bylevel > 0
 	@assert Tables.istable(tbl)
 
-	# make absolutely sure that target is not part of it
+	# make absolutely sure that target is not part of features
     features = setdiff(features, [target])
 
     # at the begginer there is only one leaf node which is the parent
