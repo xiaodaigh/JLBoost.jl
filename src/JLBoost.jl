@@ -22,9 +22,6 @@ include("JLBoostTree/JLBoostTree.jl");
 using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
     JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes
 
-include("ColumnSampleStrategy/ColumnSampleStrategy.jl");
-using ..ColumnSampleStrategy
-
 include("diagnostics.jl")
 include("g_h.jl")
 include("best_split.jl")

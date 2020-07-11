@@ -1,6 +1,5 @@
 export jlboost!, jlboost
 
-using ..ColumnSampleStrategy: ColumnNoSample, ColumnSimpleRandomSample
 using DataFrames: nrow, ncol
 using Tables
 
@@ -53,11 +52,13 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
     warm_start::AbstractVector, loss = LogitLogLoss();
     colsample_bytree = 1, kwargs...)
     # a sample of the features
-    if colsample_bytree < 1
+    if 0 < colsample_bytree < 1
         col_sampling_bytree_strategy =
-            (features, kwargs...) -> sample(features, floor(Int, length(features)*colsample_bytree))
+            (features, args...; kwargs...) -> sample(features, floor(Int, length(features)*colsample_bytree), replace=false)
+    elseif colsample_bytree == 1
+        col_sampling_bytree_strategy = (features, args...; kwargs...) -> features
     else
-        col_sampling_bytree_strategy = (features, kwargs...) -> features
+        error("colsample_bytree must be within [0, 1)")
     end
 
     # TODO look at target column and provide a possible selection of loss
@@ -66,8 +67,8 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
 end
 
 # the most canonical version of jlboost is here
-function (df, target, features, warm_start::AbstractVector,
-    loss, col_sampling_bytree_strategy;
+function jlboost(df, target, features, warm_start::AbstractVector,
+    loss, col_sampling_bytree_strategy::Function;
 	nrounds = 1, subsample = 1, eta = 1.0, verbose = false, kwargs...)
     # eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
 	#, ,  colsample_bynode = 1,
@@ -87,7 +88,9 @@ function (df, target, features, warm_start::AbstractVector,
 	 	res_jlt[i] = JLBoostTree(0.0)
 	end
 
-    features_sample = col_sampling_bytree_strategy(features)
+    features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
+                                                   nrounds=nrounds, subsample=subsample, eta=eta,
+                                                   kwargs...)
 
     # subsample (row sampling) some column
 	if subsample == 1
@@ -107,7 +110,9 @@ function (df, target, features, warm_start::AbstractVector,
 		end
 
         # sample new columns
-		features_sample = sample(col_sampling_bytree_strategy, features)
+		features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
+                                                   nrounds=nrounds, subsample=subsample, eta=eta,
+                                                   kwargs...)
 
 		if subsample == 1
 			warm_start = predict(res_jlt[1:nrounds-1], df)

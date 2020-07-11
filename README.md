@@ -40,12 +40,6 @@ xgtreemodel = jlboost(iris, target)
 
 
 ````
-weight = 0.0
-
- weight = 2.0
-
- weight = -2.0
-
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -104,18 +98,6 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-weight = 0.0
-
- weight = 2.0
-
- weight = -2.0
-
- weight = 0.0
-
- weight = 1.1353352832366148
-
- weight = -1.135335283236615
-
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -269,27 +251,21 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-weight = 0.0
-
- weight = 57.109876533583666
-
- weight = 161.19016614930158
-
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 53.96149034624538
-     -- x <= 24.630411647378423
-       ---- weight = 22.765664549620652
+   -- x <= 50.909195219759006
+     -- x <= 23.14207056121662
+       ---- weight = 22.549233811198988
 
-     -- x > 24.630411647378423
-       ---- weight = 84.38322134437783
+     -- x > 23.14207056121662
+       ---- weight = 75.95643683915512
 
-   -- x > 53.96149034624538
-     -- x <= 79.11394126149354
-       ---- weight = 140.88315474703796
+   -- x > 50.909195219759006
+     -- x <= 77.22765507997282
+       ---- weight = 134.42498763642402
 
-     -- x > 79.11394126149354
-       ---- weight = 184.88167945194223
+     -- x > 77.22765507997282
+       ---- weight = 178.71232234377575
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -362,41 +338,8 @@ irisdisk = JDFFile("iris.jdf")
 
 # fit using on disk JDF format
 xgtree1 = jlboost(irisdisk, target, features)
-````
-
-
-````
-weight = 0.0
-
- weight = 2.0
-
- weight = -2.0
-````
-
-
-
-````julia
 xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
-````
 
-
-````
-weight = 0.0
-
- weight = 2.0
-
- weight = -2.0
-
- weight = 0.0
-
- weight = 1.1353352832366148
-
- weight = -1.135335283236615
-````
-
-
-
-````julia
 # predict using on disk JDF format
 iris.pred1 = predict(xgtree1, irisdisk)
 iris.pred2 = predict(xgtree2, irisdisk)
