@@ -3,7 +3,7 @@ export fit_tree!, fit_tree
 using Tables
 
 """
-	_fit_tree(loss, df, target, features, warm_start, leaf_queue
+	_fit_tree(loss, df, target, features, warm_start, jlt, node_colsample_strategy)
 
 Fit a tree by following a algorithm
 
@@ -20,6 +20,8 @@ Parameters:
     A vector weight to serve as starting weights
 * jlt
     The JLBoost tree to update
+* node_colsample_strategy
+
 * tree_growth: Function
     A function to control where to grow the tree
 * colsample_bytree = 1
@@ -35,7 +37,9 @@ Parameters:
 * max_depth = 6
     The maximum depth of the tree
 """
-function _fit_tree!(loss, tbl, target, features, warm_start, jlt::AbstractJLBoostTree = JLBoostTree(0.0),
+function _fit_tree!(loss, tbl, target, features, warm_start,
+    jlt::AbstractJLBoostTree = JLBoostTree(0.0),
+    col_sampling_bytree_strategy = (features, args...; kwargs...)->features,
     tree_growth = depth_wise;
 	colsample_bytree = 1, colsample_bynode = 1, colsample_bylevel = 1, lambda = 0, gamma = 0,
 	max_depth = 6, verbose = false, kwargs...)
@@ -50,7 +54,9 @@ function _fit_tree!(loss, tbl, target, features, warm_start, jlt::AbstractJLBoos
 
     # at the begginer there is only one leaf node which is the parent
     # amongst the end nodes compute the best split and choose the best split based on the leaf notes
-    println(jlt)
+    if verbose
+        println(jlt)
+    end
     leaf_nodes = get_leaf_nodes(jlt)
 
 	# compute the gain for all splits for all features
@@ -62,8 +68,6 @@ function _fit_tree!(loss, tbl, target, features, warm_start, jlt::AbstractJLBoos
 			split_with_best_gain = feature_split
 		end
     end
-
-
 
 	# there needs to be positive gain then apply split to the tree
 	if split_with_best_gain.gain > 0
