@@ -4,7 +4,8 @@
 
 module ColumnSampleStrategy
 
-export ColumnSimpleRandomSample, NoSample, SampleSameColumnAsParent
+using ..JLBoostTrees: AbstractJLBoostTree
+export ColumnSimpleRandomSample, ColumnNoSample, SameColumnAsParentSample
 
 import StatsBase: sample
 
@@ -27,19 +28,18 @@ function sample(S::ColumnSimpleRandomSample, features, _...)
 end
 
 # do no sampling at all
-struct NoSample <: AbstractColumnSampleStrategy end
+struct ColumnNoSample <: AbstractColumnSampleStrategy end
 
-function sample(::NoSample, features, _...)
+function sample(::ColumnNoSample, features, _...)
     features
 end
 
 # sample only one feature, the one that has been used to split in the parent
 # this can be very useful as the data is already sorted by this column so it will be
 # quite fast
-struct SampleSameColumnAsParent <: AbstractColumnSampleStrategy
-end
+struct SameColumnAsParentSample <: AbstractColumnSampleStrategy end
 
-function sample(::SampleSameColumnAsParent, features, current_node::AbstractJLBoostTree, _...)
+function sample(::SameColumnAsParentSample, features, current_node::AbstractJLBoostTree, _...)
     (current_node.parent.splitfeature, )
 end
 

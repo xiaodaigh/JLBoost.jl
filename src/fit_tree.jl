@@ -41,7 +41,7 @@ Parameters:
 """
 function _fit_tree!(loss, tbl, target, features, warm_start,
     jlt::AbstractJLBoostTree = JLBoostTree(0.0),
-    col_sampling_bytree_strategy = NoSample(),
+    col_sampling_bytree_strategy = ColumnNoSample(),
     tree_growth = depth_wise;
 	colsample_bytree = 1, colsample_bynode = 1, colsample_bylevel = 1, lambda = 0, gamma = 0,
 	max_depth = 6, verbose = false, kwargs...)
