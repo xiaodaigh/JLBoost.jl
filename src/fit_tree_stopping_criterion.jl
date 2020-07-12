@@ -1,10 +1,12 @@
-module TreeFitStoppingCriterions
+module TreeFitStoppingCriterion
+
+ using ..JLBoostTrees: AbstractJLBoostTree
 
 export max_depth
 
 function max_depth(depth)
     function (jlt::AbstractJLBoostTree)
-        nodedepth(jlt) >= depth
+        treedepth(jlt) >= depth
     end
 end
 
