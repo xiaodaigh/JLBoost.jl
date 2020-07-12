@@ -43,11 +43,7 @@ xgtreemodel = jlboost(iris, target)
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
-   -- PetalLength > 1.9
-     ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -101,11 +97,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
-   -- PetalLength > 1.9
-     ---- weight = -2.0
-, eta = 1.0 (tree weight)
+   -- PetalLength > 1.9, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      -- SepalLength <= 4.8
@@ -253,19 +245,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 49.23826034647563
-     -- x <= 24.734013216175278
-       ---- weight = 28.21599328176297
+   -- x <= 45.44446429354117
+     -- x <= 20.476215194505087
+       ---- weight = 21.323447423000356
 
-     -- x > 24.734013216175278
-       ---- weight = 78.10155784998965
+     -- x > 20.476215194505087
+       ---- weight = 64.38026605447776
 
-   -- x > 49.23826034647563
-     -- x <= 74.05097440649145
-       ---- weight = 126.43998210098466
+   -- x > 45.44446429354117
+     -- x <= 69.07402550845046
+       ---- weight = 117.22022764309838
 
-     -- x > 74.05097440649145
-       ---- weight = 173.34004997373518
+     -- x > 69.07402550845046
+       ---- weight = 169.10378937266196
 ], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
@@ -309,10 +301,7 @@ Tree 1
 eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
    -- PetalLength > 1.9
-     ---- weight = -2.0
 ````
 
 
