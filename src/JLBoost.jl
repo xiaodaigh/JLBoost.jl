@@ -15,7 +15,7 @@ export JLBoostTree, show, *, print, println
 export LogitLogloss, value, deriv, deriv2, trees
 export JLBoostTreeModel, JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 export getproperty, AbstractJLBoostTree, predict
-# export depth_wise, max_depth
+export depth_wise, max_depth
 # include("traitwrappers.jl")
 
 include("JLBoostTree/JLBoostTree.jl");
@@ -30,9 +30,6 @@ include("row_sampling_strategies.jl")
 include("diagnostics.jl")
 include("g_h.jl")
 include("find_best_split.jl")
-
-
-
 
 
 include("fit_tree.jl")
