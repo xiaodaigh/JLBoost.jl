@@ -38,15 +38,15 @@ Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, targe
 
 Does not assume that Feature, target, and warmstart sorted and will sort them for you.
 """
-function find_best_split(loss, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
-	@assert length(feature) == length(target)
-	@assert length(feature) == length(warmstart)
+function find_best_split(loss, features::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
+	@assert length(features) == length(target)
+	@assert length(features) == length(warmstart)
 
-    if issorted(feature)
-        res = _find_best_split(loss, feature, target, warmstart, lambda, gamma; kwargs...)
+    if issorted(features)
+        res = _find_best_split(loss, features, target, warmstart, lambda, gamma; kwargs...)
     else
-        s = fsortperm(feature)
-        res = _find_best_split(loss, @view(feature[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
+        s = fsortperm(features)
+        res = _find_best_split(loss, @view(features[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
     end
 end
 
@@ -69,7 +69,7 @@ end
 
 
 function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
-	@assert length(feature) >= 2
+    @assert length(feature) >= 2
 	@assert length(target) == length(feature)
 	@assert length(warmstart) == length(feature)
 
@@ -80,10 +80,10 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
     max_ch = ch[end]
 
     last_feature = feature[1]
-    cutpt::Int = zero(Int)
-    lweight::Float64 = 0.0
-    rweight::Float64 = 0.0
-    best_gain::Float64 = typemin(Float64)
+    cutpt = zero(Int)
+    lweight = 0.0
+    rweight = 0.0
+    best_gain = typemin(Float64)
 
 	for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
 		if f != last_feature
@@ -104,23 +104,27 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
 
 	# set the split at the point at the end
     split_at = feature[end]
+    further_split = false
 
 	# the child weight is the hessian
     if cutpt >= 1
     	split_at = feature[cutpt]
 		if ch[cutpt] < min_child_weight
-			# the weight is less than child weight; do not split further
+            # the weight is less than child weight; do not split further
+            # TODO assess if this is appropriate
 			split_at = feature[end]
 			cutpt = 0
 			no_split = max_cg^2 /(max_ch + lambda)
 	    	gain = no_split - gamma
-	    	cutpt = 0
 	    	lweight = -cg[end]/(ch[end]+lambda)
-	    	rweight = -cg[end]/(ch[end]+lambda)
+            rweight = -cg[end]/(ch[end]+lambda)
+            further_split = false
+        else
+            further_split = true
 		end
     end
 
-    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
+    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, further_split = further_split)
 end
 
 # TODO more reseach into GPU friendliness

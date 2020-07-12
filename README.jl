@@ -11,11 +11,6 @@ features = setdiff(names(iris), ["Species", "is_setosa"])
 # ?jlboost for more details
 xgtreemodel = jlboost(iris, target)
 
-@which jlboost(iris, target)
-
-
-trees(xgtreemodel)[1].children[1]
-
 
 typeof(trees(xgtreemodel))
 
@@ -27,6 +22,9 @@ typeof(xgtreemodel.target)
 
 
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
+
+
+xgtreemodel3 = jlboost(iris, target; nrounds = 1, max_leaves = 4, max_depth = 0)
 
 
 iris.pred1 = predict(xgtreemodel, iris)

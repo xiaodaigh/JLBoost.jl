@@ -3,6 +3,8 @@ export jlboost!, jlboost
 using DataFrames: nrow, ncol
 using Tables
 
+using ..JLBoostTrees: JLBoostTree
+
 """
     jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)),
         warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0,
@@ -11,8 +13,8 @@ using Tables
 
 Fit a tree boosting model with a DataFrame, df, and target symbol and allowed features.
 
-This is based on the xgboost interface, where possible the parameters have the same name as xgboost, see
-https://xgboost.readthedocs.io/en/latest/parameter.html
+This is based on the xgboost interface, where possible the parameters have the same name as xgboost,
+see https://xgboost.readthedocs.io/en/latest/parameter.html
 
 * nrounds: Number of trees to fit
 * warmstart: A vector of weights from which to start training. Defaults to 0. The warmstart may be
@@ -67,6 +69,9 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
     col_sampling_bytree_strategy = select_col_sampling_strategy(colsample_bytree)
 
     if max_leaves > 0
+        if max_depth > 0
+            @warn "You have set max_leaves=$max_leaves but max_depth > 0. The max_depth parameter is ignored."
+        end
         tree_growth = lossguide
         stopping_criterion = max_leaves_stopping_criterion(max_leaves)
     else
@@ -121,10 +126,10 @@ function jlboost(df, target, features, warm_start::AbstractVector,
         else
             warm_start = predict(res_jlt[1:nrounds-1], dfs)
         end
+
         new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0),
                              tree_growth,
                              stopping_criterion; verbose=verbose, kwargs...);
-
         # added a new round of tree
         push!(res_jlt, eta*deepcopy(new_jlt))
 	end

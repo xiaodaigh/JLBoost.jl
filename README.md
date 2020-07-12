@@ -13,9 +13,9 @@ This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT
 * Play nice with the Julia ecosystem e.g. Tables.jl, DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
-
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
+* Completely [hackable](https://docs.google.com/presentation/d/1xjhi8AbOpBzCxoLy9kGR_NuBqo0O2EWpqQFfXCAjCGY/edit?usp=sharing)
 
 ## Quick-start
 
@@ -117,6 +117,55 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
 
 
+
+
+To grow the tree a leaf-wise (AKA best-first or or in XGBoost terminology "lossguided") strategy,
+you see set the `max_leaves` parameters e.g.
+````julia
+xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
+````
+
+
+````
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+   -- PetalLength > 1.9, eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+   -- PetalLength > 1.9
+     -- SepalLength <= 7.9
+       -- SepalLength <= 7.9
+         -- SepalLength <= 7.9
+           -- SepalLength <= 7.9
+             -- SepalLength <= 7.9
+               -- SepalLength <= 7.9
+                 ---- weight = -1.1353352832366106
+
+               -- SepalLength > 7.9
+                 ---- weight = -1.1353352832366106
+
+             -- SepalLength > 7.9
+               ---- weight = -1.1353352832366106
+
+           -- SepalLength > 7.9
+             ---- weight = -1.1353352832366106
+
+         -- SepalLength > 7.9
+           ---- weight = -1.1353352832366106
+
+       -- SepalLength > 7.9
+         ---- weight = -1.1353352832366106
+
+     -- SepalLength > 7.9
+       ---- weight = -1.1353352832366106
+], LogitLogLoss(), :is_setosa)
+````
+
+
+
+
+it recommended that you set `max_depth = 0` to avoid a warning message.
 
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
@@ -245,20 +294,20 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 45.44446429354117
-     -- x <= 20.476215194505087
-       ---- weight = 21.323447423000356
+   -- x <= 51.32214061939242
+     -- x <= 25.727349410831657
+       ---- weight = 27.256447989838772
 
-     -- x > 20.476215194505087
-       ---- weight = 64.38026605447776
+     -- x > 25.727349410831657
+       ---- weight = 78.41122899944891
 
-   -- x > 45.44446429354117
-     -- x <= 69.07402550845046
-       ---- weight = 117.22022764309838
+   -- x > 51.32214061939242
+     -- x <= 76.23406281742487
+       ---- weight = 127.6822164204993
 
-     -- x > 69.07402550845046
-       ---- weight = 169.10378937266196
-], LossFunctions.LPDistLoss{2}(), :y)
+     -- x > 76.23406281742487
+       ---- weight = 179.58620985748945
+], LPDistLoss{2}(), :y)
 ````
 
 
@@ -347,9 +396,11 @@ rm("iris.jdf", force=true, recursive=true)
 
 
 
-#### MLJ.jl
+### MLJ.jl
 
 Integration with MLJ.jl is available via the [JLBoostMLJ.jl](https://github.com/xiaodaigh/JLBoostMLJ.jl) package
+
+### Hackable
 
 ## Notes
 

@@ -28,8 +28,8 @@ mutable struct JLBoostTree <: AbstractJLBoostTree
     children::Vector{AbstractJLBoostTree}
     splitfeature
     split
-    JLBoostTree(w::T) where {T <: Number}  = new(w, nothing, JLBoostTree[], missing, missing)
-	JLBoostTree(w::T, parent::JLBoostTree) where {T <: Number}  = new(w, parent, JLBoostTree[], missing, missing)
+    gain
+    JLBoostTree(w::T; parent=nothing) where {T <: Number}  = new(w, parent, JLBoostTree[], missing, missing, missing)
 end
 
 mutable struct WeightedJLBoostTree <: AbstractJLBoostTree

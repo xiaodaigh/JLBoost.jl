@@ -13,9 +13,9 @@ This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT
 * Play nice with the Julia ecosystem e.g. Tables.jl, DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
-
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
+* Completely [hackable](https://docs.google.com/presentation/d/1xjhi8AbOpBzCxoLy9kGR_NuBqo0O2EWpqQFfXCAjCGY/edit?usp=sharing)
 
 ## Quick-start
 
@@ -56,6 +56,14 @@ You can control parameters like  `max_depth` and `nrounds`
 ```julia
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 ```
+
+To grow the tree a leaf-wise (AKA best-first or or in XGBoost terminology "lossguided") strategy,
+you see set the `max_leaves` parameters e.g.
+```julia
+xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
+```
+it recommended that you set `max_depth = 0` to avoid a warning message.
+
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
 ```julia
@@ -165,9 +173,11 @@ gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 rm("iris.jdf", force=true, recursive=true)
 ```
 
-#### MLJ.jl
+### MLJ.jl
 
 Integration with MLJ.jl is available via the [JLBoostMLJ.jl](https://github.com/xiaodaigh/JLBoostMLJ.jl) package
+
+### Hackable
 
 ## Notes
 

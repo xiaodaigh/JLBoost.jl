@@ -1,5 +1,5 @@
 using Pkg
-#Pkg.activate("c:/git/JLBoost")
+Pkg.activate("c:/git/JLBoost")
 @time using DataFrames
 @time using JDF
 @time using JLBoost, LossFunctions
