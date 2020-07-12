@@ -58,7 +58,9 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
     no_more_gains_to_found = false
 
     while !no_more_gains_to_found && !stopping_criterion(jlt)
-        println("one more $(treedepth(jlt))")
+        if verbose
+            println("Tree Depth: $(treedepth(jlt))")
+        end
         # at the beginning there is only one leaf node which is the parent for all nodes
         # amongst the end nodes compute the best split and choose the best split based on the leaf
         # nodes keep only those where a split has not been decided

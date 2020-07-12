@@ -94,23 +94,25 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
 ````
-Error: MethodError: no method matching _find_best_split(::LogitLogLoss, ::S
-ubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ::SubArray
-{Bool,1,BitArray{1},Tuple{Array{Int64,1}},false}, ::SubArray{Float64,1,Arra
-y{Float64,1},Tuple{Array{Int64,1}},false}, ::Int64, ::Int64; verbose=false,
- max_depth=2)
-Closest candidates are:
-  _find_best_split(::Any, ::Any, ::Any, ::Any, ::Number, ::Number; min_chil
-d_weight, verbose) at c:\git\JLBoost\src\find_best_split.jl:71 got unsuppor
-ted keyword argument "max_depth"
-  _find_best_split(::LogitLogLoss, ::AbstractArray{T,1} where T, !Matched::
-CategoricalArray{T,1,V,C,U,U1} where U1 where U where C where V where T, ::
-AbstractArray{T,1} where T, ::Number, ::Number; kwargs...) at c:\git\JLBoos
-t\src\find_best_split.jl:58
-  _find_best_split(::LogitLogLoss, ::AbstractArray{T,1} where T, !Matched::
-SubArray{A,B,C,D,E}, ::AbstractArray{T,1} where T, ::Number, ::Number; kwar
-gs...) where {A, B, C<:CategoricalArray, D, E} at c:\git\JLBoost\src\find_b
-est_split.jl:64
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+   -- PetalLength > 1.9, eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+     -- SepalLength <= 4.8
+       ---- weight = 1.1353352832366135
+
+     -- SepalLength > 4.8
+       ---- weight = 1.1353352832366155
+
+   -- PetalLength > 1.9
+     -- SepalLength <= 7.9
+       ---- weight = -1.1353352832366106
+
+     -- SepalLength > 7.9
+       ---- weight = -1.1353352832366106
+], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -121,22 +123,32 @@ Convenience `predict` function is provided. It can be used to score a tree or a 
 ````julia
 iris.pred1 = predict(xgtreemodel, iris)
 iris.pred2 = predict(xgtreemodel2, iris)
-````
-
-
-````
-Error: UndefVarError: xgtreemodel2 not defined
-````
-
-
-
-````julia
 iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
 ````
 
 
 ````
-Error: UndefVarError: xgtreemodel2 not defined
+150-element Array{Float64,1}:
+  5.135335283236616
+  5.135335283236616
+  5.135335283236613
+  5.135335283236613
+  5.135335283236616
+  5.135335283236616
+  5.135335283236613
+  5.135335283236616
+  5.135335283236613
+  5.135335283236616
+  ⋮
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
+ -5.135335283236611
 ````
 
 
@@ -184,7 +196,11 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-Error: InterruptException:
+1×4 DataFrame
+│ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
+│     │ Symbol      │ Float64      │ Float64  │ Float64   │
+├─────┼─────────────┼──────────────┼──────────┼───────────┤
+│ 1   │ PetalLength │ 1.0          │ 1.0      │ 1.0       │
 ````
 
 
@@ -227,23 +243,22 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 
 
 ````
-Error: MethodError: no method matching _find_best_split(::LossFunctions.LPD
-istLoss{2}, ::SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},fal
-se}, ::SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ::
-SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ::Int64, 
-::Int64; verbose=false, max_depth=2)
-Closest candidates are:
-  _find_best_split(::Any, ::Any, ::Any, ::Any, ::Number, ::Number; min_chil
-d_weight, verbose) at c:\git\JLBoost\src\find_best_split.jl:71 got unsuppor
-ted keyword argument "max_depth"
-  _find_best_split(!Matched::LogitLogLoss, ::AbstractArray{T,1} where T, !M
-atched::CategoricalArray{T,1,V,C,U,U1} where U1 where U where C where V whe
-re T, ::AbstractArray{T,1} where T, ::Number, ::Number; kwargs...) at c:\gi
-t\JLBoost\src\find_best_split.jl:58
-  _find_best_split(!Matched::LogitLogLoss, ::AbstractArray{T,1} where T, !M
-atched::SubArray{A,B,C,D,E}, ::AbstractArray{T,1} where T, ::Number, ::Numb
-er; kwargs...) where {A, B, C<:CategoricalArray, D, E} at c:\git\JLBoost\sr
-c\find_best_split.jl:64
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
+   -- x <= 45.44446429354117
+     -- x <= 20.476215194505087
+       ---- weight = 21.323447423000356
+
+     -- x > 20.476215194505087
+       ---- weight = 64.38026605447776
+
+   -- x > 45.44446429354117
+     -- x <= 69.07402550845046
+       ---- weight = 117.22022764309838
+
+     -- x > 69.07402550845046
+       ---- weight = 169.10378937266196
+], LossFunctions.LPDistLoss{2}(), :y)
 ````
 
 
@@ -300,19 +315,6 @@ The key advantage of fitting a model using `JDF.JDFFile` is that not all the dat
 
 ````julia
 using JLBoost, RDatasets, JDF
-````
-
-
-````
-Error: InitError: could not load library "C:\Users\RTX2080\.julia\artifacts
-\1b170a85de9456e766ecaa5caf73c8ef5986c046\bin\libblosc.dll"
-The specified module could not be found. 
-during initialization of module Blosc_jll
-````
-
-
-
-````julia
 iris = dataset("datasets", "iris")
 
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
@@ -321,117 +323,22 @@ target = :is_setosa
 features = setdiff(names(iris), [:Species, :is_setosa])
 
 savejdf("iris.jdf", iris)
-````
-
-
-````
-Error: UndefVarError: savejdf not defined
-````
-
-
-
-````julia
 irisdisk = JDFFile("iris.jdf")
-````
-
-
-````
-Error: UndefVarError: JDFFile not defined
-````
-
-
-
-````julia
 
 # fit using on disk JDF format
 xgtree1 = jlboost(irisdisk, target, features)
-````
-
-
-````
-Error: UndefVarError: irisdisk not defined
-````
-
-
-
-````julia
 xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
-````
-
-
-````
-Error: MethodError: no method matching _find_best_split(::LogitLogLoss, ::S
-ubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ::SubArray
-{Bool,1,BitArray{1},Tuple{Array{Int64,1}},false}, ::SubArray{Float64,1,Arra
-y{Float64,1},Tuple{Array{Int64,1}},false}, ::Int64, ::Int64; verbose=false,
- max_depth=2)
-Closest candidates are:
-  _find_best_split(::Any, ::Any, ::Any, ::Any, ::Number, ::Number; min_chil
-d_weight, verbose) at c:\git\JLBoost\src\find_best_split.jl:71 got unsuppor
-ted keyword argument "max_depth"
-  _find_best_split(::LogitLogLoss, ::AbstractArray{T,1} where T, !Matched::
-CategoricalArray{T,1,V,C,U,U1} where U1 where U where C where V where T, ::
-AbstractArray{T,1} where T, ::Number, ::Number; kwargs...) at c:\git\JLBoos
-t\src\find_best_split.jl:58
-  _find_best_split(::LogitLogLoss, ::AbstractArray{T,1} where T, !Matched::
-SubArray{A,B,C,D,E}, ::AbstractArray{T,1} where T, ::Number, ::Number; kwar
-gs...) where {A, B, C<:CategoricalArray, D, E} at c:\git\JLBoost\src\find_b
-est_split.jl:64
-````
-
-
-
-````julia
 
 # predict using on disk JDF format
 iris.pred1 = predict(xgtree1, irisdisk)
-````
-
-
-````
-Error: UndefVarError: xgtree1 not defined
-````
-
-
-
-````julia
 iris.pred2 = predict(xgtree2, irisdisk)
-````
-
-
-````
-Error: UndefVarError: xgtree2 not defined
-````
-
-
-
-````julia
 
 # AUC
 AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
-````
-
-
-````
-Error: UndefVarError: xgtree1 not defined
-````
-
-
-
-````julia
 
 # gini
 gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
-````
 
-
-````
-Error: UndefVarError: xgtree1 not defined
-````
-
-
-
-````julia
 # clean up
 rm("iris.jdf", force=true, recursive=true)
 ````
