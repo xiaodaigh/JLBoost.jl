@@ -1,5 +1,8 @@
 export feature_importance
 
+using ..JLBoostTrees: has_children
+
+
 using DataFrames: DataFrame
 
 """
@@ -75,7 +78,7 @@ end
 
 
 feature_importance!(jlt::AbstractJLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
-    if !isequal(jlt.splitfeature, missing)
+    if has_children(jlt)
         # compute the Quality/Gain. Coverage
         rows_bool_left = rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
 

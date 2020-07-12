@@ -1,6 +1,4 @@
-using JLBoost: depth_wise
-
-using JLBoost: _fit_tree!, LogitLogLoss
+using JLBoost: _fit_tree!, LogitLogLoss, depth_wise, get_leaf_nodes, keeprow_vec, max_depth_stopping_criterion
 
 using RDatasets, DataFrames
 
@@ -20,12 +18,12 @@ verbose = false
 
 jlt = JLBoostTree(0.0)
 tree_growth = depth_wise
-stopping_criterion = max_depth(6)
+stopping_criterion = max_depth_stopping_criterion(6)
 
 # _fit_tree!(loss, tbl, target, features, warm_start,
 #     jlt::AbstractJLBoostTree = JLBoostTree(0.0),
 #     tree_growth::Function = depth_wise,
-#     stopping_criterion::Function = max_depth(6);
+#     stopping_criterion::Function = max_depth_stopping_criterion(6);
 #     #colsample_bynode = 1, colsample_bylevel = 1,
 # 	kwargs...)
 

@@ -1,6 +1,7 @@
 export keeprow_vec, filter_tbl_by_splits
 
 using DataFrames: nrow
+using Tables
 
 """
     Returns the boolean that can used to filter the table
@@ -8,18 +9,26 @@ using DataFrames: nrow
 * tbl - A Tables.jl table
 * node - A JLBoostTree
 """
-function keeprow_vec(tbl, node::AbstractJLBoostTree)
+function keeprow_vec(tbl, node::Union{Nothing, AbstractJLBoostTree})::BitArray
     @assert Tables.istable(tbl)
 
     tblc = Tables.columns(tbl)
 
     # a boolean on whether to keep the row
-    keeprow = trues(nrow(tblc))
+    if node === nothing
+        return keeprow = trues(nrow(tbl))
+    end
 
-    while node !== nothing
-        # now recursively apply the weights to left branch and right branch
-        keeprow .&= getproperty(tblc, node.feature) .<= node.split_at
-        node = node.parent
+    if node.parent.parent === nothing
+        keeprow = trues(nrow(tbl))
+    else
+        keeprow = keeprow_vec(tbl, node.parent)
+    end
+
+    if is_left_child(node)
+        keeprow .&= getproperty(tblc, node.parent.splitfeature) .<= node.parent.split
+    else
+        keeprow .&= getproperty(tblc, node.parent.splitfeature) .> node.parent.split
     end
 
     keeprow

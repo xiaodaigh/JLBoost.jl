@@ -15,12 +15,13 @@ export JLBoostTree, show, *, print, println
 export LogitLogloss, value, deriv, deriv2, trees
 export JLBoostTreeModel, JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 export getproperty, AbstractJLBoostTree, predict
-export depth_wise, max_depth
-# include("traitwrappers.jl")
+export max_depth_stopping_criterion, max_leaves_stopping_criterion
 
-include("JLBoostTree/JLBoostTree.jl");
+
+include("JLBoostTrees/JLBoostTrees.jl");
 using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
-    JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes
+    JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes, treedepth, keeprow_vec,
+    is_left_child, is_right_child
 
 include("tree-growth.jl")
 
@@ -31,11 +32,12 @@ include("diagnostics.jl")
 include("g_h.jl")
 include("find_best_split.jl")
 
+include("fit_tree_stopping_criterion.jl")
+using ..TreeFitStoppingCriterion: max_depth_stopping_criterion, max_leaves_stopping_criterion
+
 
 include("fit_tree.jl")
 
-include("fit_tree_stopping_criterion.jl")
-using ..TreeFitStoppingCriterion: max_depth
 
 include("predict.jl")
 include("save.jl")

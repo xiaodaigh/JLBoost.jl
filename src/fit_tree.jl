@@ -36,7 +36,7 @@ Parameters:
 function _fit_tree!(loss, tbl, target, features, warm_start,
     jlt::AbstractJLBoostTree = JLBoostTree(0.0),
     tree_growth = depth_wise,
-    stopping_criterion = max_depth(6);
+    stopping_criterion = max_depth_stopping_criterion(6);
     lambda = 0, gamma = 0,
     verbose = false, #colsample_bynode = 1, colsample_bylevel = 1,
 	kwargs...)
@@ -55,22 +55,29 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
     # keep track of the best gains at each node as we do not want to store the gain in the tree
     best_split_dict = Dict()
 
-    while !stopping_criterion(jlt)
+    no_more_gains_to_found = false
+
+    while !no_more_gains_to_found && !stopping_criterion(jlt)
+        println("one more $(treedepth(jlt))")
         # at the beginning there is only one leaf node which is the parent for all nodes
         # amongst the end nodes compute the best split and choose the best split based on the leaf
         # nodes keep only those where a split has not been decided
         leaf_nodes = filter(x->ismissing(x.splitfeature), get_leaf_nodes(jlt))
 
-        # used to keep the best split for each leaf_node
-        split_results = []
-
         # for all nodes eligible for splitting
         # compute the best split feature and the best split point
         # set the split point
+        # leaf_node = leaf_nodes[1]
         for leaf_node in leaf_nodes
-            keeprow = keeprow_vec(tbl, leaf_node)
-            tblc_filtered = view(tblc, keeprow, :)
-            warm_start_filtered = view(warm_start, keeprow)
+            if leaf_node.parent === nothing
+                # if the node is the parent
+                tblc_filtered = tblc
+                warm_start_filtered = warm_start
+            else
+                keeprow = keeprow_vec(tbl, leaf_node)
+                tblc_filtered = view(tblc, keeprow, :)
+                warm_start_filtered = view(warm_start, keeprow)
+            end
 
             # compute the gain for all splits for all features
             split_with_best_gain =
@@ -95,13 +102,16 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
         # tree_growth phase
         # select the node to grow based on growth function
-        leaf_nodes = get_leaf_nodes(jlt)
-        nodes_to_split::Vector{<:AbstractJLBoostTree} = tree_growth(leaf_nodes)
+        # the tree_growth function will return the list of
+        # nodes_to_split = tree_growth(jlt)
+        nodes_to_split::Vector{<:AbstractJLBoostTree} = tree_growth(jlt)
 
+        no_more_gains_to_found = true
         for node_to_split in nodes_to_split
             # there needs to be positive gain then apply split to the tree
             split_with_best_gain = best_split_dict[node_to_split]
             if split_with_best_gain.gain > 0
+                no_more_gains_to_found = false
                 left_treenode = JLBoostTree(split_with_best_gain.lweight, node_to_split)
                 right_treenode = JLBoostTree(split_with_best_gain.rweight, node_to_split)
                 node_to_split.children = [left_treenode, right_treenode]
