@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("c:/git/JLBoost")
+Pkg.activate("c:/git/JLBoost/jlboost-test")
 @time using JLBoost
 @time using DataFrames, JDF
 
@@ -22,6 +22,7 @@ end
 ###############################################################################
 @time a = loadjdf("c:/data/GiveMeSomeCredit/cs-training.jdf")
 
+# this won't work until missing won't work
 @time jlboost(a, :SeriousDlqin2yrs)
 
 @time jlboost(a, :SeriousDlqin2yrs, max_leaves = 32)

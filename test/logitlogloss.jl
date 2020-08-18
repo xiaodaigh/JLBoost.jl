@@ -3,6 +3,7 @@ Pkg.activate("c:/git/JLBoost")
 @time using DataFrames
 @time using JDF
 @time using JLBoost, LossFunctions
+using JLBoost: LogitLogloss
 
 ###############################################################################
 # fitting GiveMeSomeCredit
