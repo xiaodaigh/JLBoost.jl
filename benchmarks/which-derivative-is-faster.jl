@@ -9,25 +9,25 @@ Pkg.activate("c:/git/JLBoost")
 # fitting fm
 ###############################################################################
 if !isdir("c:/data/GiveMeSomeCredit/cs-training.jdf")
-	using CSV
-	a = CSV.read("c:/data/GiveMeSomeCredit/cs-training.csv", missingstrings=["NA"])
-	rename!(a, Symbol("")=>:column1)
-	create_missing!(a, :MonthlyIncome)
-	create_missing!(a, :NumberOfDependents)
-	type_compress!(a, compress_float=true)
-	savejdf("c:/data/GiveMeSomeCredit/cs-training.jdf", a)
+    using CSV
+    a = CSV.read("c:/data/GiveMeSomeCredit/cs-training.csv", missingstrings = ["NA"])
+    rename!(a, Symbol("") => :column1)
+    create_missing!(a, :MonthlyIncome)
+    create_missing!(a, :NumberOfDependents)
+    type_compress!(a, compress_float = true)
+    savejdf("c:/data/GiveMeSomeCredit/cs-training.jdf", a)
 end
 
 a = loadjdf("c:/data/GiveMeSomeCredit/cs-training.jdf")
 
 using Calculus
 
-softmax(w) = 1/(1 + exp(-w))
+softmax(w) = 1 / (1 + exp(-w))
 logloss(y) = w -> logloss(y, w)
-logloss(y, w) = -(y*log( 1/(1 + exp(-w))) + (1-y)*log(1- 1/(1 + exp(-w))))
+logloss(y, w) = -(y * log(1 / (1 + exp(-w))) + (1 - y) * log(1 - 1 / (1 + exp(-w))))
 
 t = a.SeriousDlqin2yrs
-ws = fill(0.0,nrow(a))
+ws = fill(0.0, nrow(a))
 
 using CuArrays
 ct = cu(t)
@@ -50,11 +50,15 @@ using ForwardDiff
 using ForwardDiff
 
 d = transpose(hcat(t, ws))
-@benchmark ForwardDiff.gradient.(x->logloss(x...), eachcol(d))
+@benchmark ForwardDiff.gradient.(x -> logloss(x...), eachcol(d))
 
 using Zygote: @adjoint, gradient
 
-@adjoint logloss(y, w) = logloss(y, w), Δ -> (Δ*-(log(1/(1+exp(-w))) - (log(1 - 1/(1+exp(-w))))), Δ*( -1/(1+exp(w)) - y + 1))
+@adjoint logloss(y, w) = logloss(y, w),
+Δ -> (
+    Δ * -(log(1 / (1 + exp(-w))) - (log(1 - 1 / (1 + exp(-w))))),
+    Δ * (-1 / (1 + exp(w)) - y + 1),
+)
 
 @time gradient(logloss, 1, 0.5)
 
@@ -81,7 +85,7 @@ gg(ct, cws) = gradient(logloss, ct, cws)[2]
 logloss.(ct, cws)
 
 |
-d1(y,w) = @. -1 / (1 + exp(w)) - y + 1
+d1(y, w) = @. -1 / (1 + exp(w)) - y + 1
 
 using BenchmarkTools
 CuArrays.allowscalar(false)

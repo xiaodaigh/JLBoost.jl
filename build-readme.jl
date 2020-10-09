@@ -16,7 +16,7 @@ end
 
 using Weave
 
-weave("c:/git/JLBoost/README.jmd", out_path=:pwd, doctype="github")
+weave("c:/git/JLBoost/README.jmd", out_path = :pwd, doctype = "github")
 
 # Pkg.rm("Weave")
 # Pkg.rm("RDatasets")

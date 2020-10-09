@@ -17,14 +17,14 @@ function depth_wise(jlt::AbstractJLBoostTree)
 end
 
 function lossguide(jlt::AbstractJLBoostTree)::Vector{JLBoostTree}
-    leaf_nodes = filter(x->!ismissing(x.gain), get_leaf_nodes(jlt))
-    leaf_nodes = filter(x->x.gain > 0, leaf_nodes)
+    leaf_nodes = filter(x -> !ismissing(x.gain), get_leaf_nodes(jlt))
+    leaf_nodes = filter(x -> x.gain > 0, leaf_nodes)
 
     if length(leaf_nodes) == 0
         return JLBoostTree[]
     else
         # the gains are stored in the parents
-        _, pos = findmax(map(x->x.gain, leaf_nodes))
+        _, pos = findmax(map(x -> x.gain, leaf_nodes))
         return [leaf_nodes[pos]]
     end
 end

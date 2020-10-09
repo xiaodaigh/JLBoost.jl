@@ -1,6 +1,8 @@
 
-using JLBoost, RDatasets
+using JLBoost
+using RDatasets, FloatingTableView
 iris = dataset("datasets", "iris")
+vscodedisplay
 
 iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
 target = :is_setosa
@@ -23,8 +25,10 @@ typeof(xgtreemodel.target)
 
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
+typeof(xgtreemodel2)
 
-xgtreemodel3 = jlboost(iris, target; nrounds = 1, max_leaves = 4, max_depth = 0)
+
+xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 
 
 iris.pred1 = predict(xgtreemodel, iris)
@@ -38,7 +42,7 @@ AUC(-iris.pred1, iris.is_setosa)
 gini(-iris.pred1, iris.is_setosa)
 
 
-feature_importance(xgtreemodel, iris)
+feature_importance(xgtreemodel2, iris)
 
 
 nrow(df) # returns the number of rows
@@ -50,7 +54,7 @@ using DataFrames
 using JLBoost
 df = DataFrame(x = rand(100) * 100)
 
-df[!, :y] = 2*df.x .+ rand(100)
+df[!, :y] = 2 * df.x .+ rand(100)
 
 target = :y
 features = [:x]
@@ -59,7 +63,7 @@ warm_start = fill(0.0, nrow(df))
 
 using LossFunctions: L2DistLoss
 loss = L2DistLoss()
-jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
+jlboost(df, target, features, warm_start, loss; max_depth = 2) # default max_depth = 6
 
 
 JLBoost.save(xgtreemodel, "model.jlb")
@@ -96,5 +100,4 @@ AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 
 # clean up
-rm("iris.jdf", force=true, recursive=true)
-
+rm("iris.jdf", force = true, recursive = true)

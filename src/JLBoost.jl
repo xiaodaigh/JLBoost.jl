@@ -13,15 +13,26 @@ using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
 export jlboost, find_best_split, _find_best_split, predict, fit_tree, logloss, jlboost!
 export JLBoostTree, show, *, print, println
 export LogitLogloss, value, deriv, deriv2, trees
-export JLBoostTreeModel, JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
+export JLBoostTreeModel,
+    JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 export getproperty, AbstractJLBoostTree, predict
 export max_depth_stopping_criterion, max_leaves_stopping_criterion
 
 
-include("JLBoostTrees/JLBoostTrees.jl");
-using ..JLBoostTrees: JLBoostTree, AbstractJLBoostTree, WeightedJLBoostTree,
-    JLBoostTreeModel, trees, vcat, getproperty, get_leaf_nodes, treedepth, keeprow_vec,
-    is_left_child, is_right_child
+include("JLBoostTrees/JLBoostTrees.jl")
+using ..JLBoostTrees:
+    JLBoostTree,
+    AbstractJLBoostTree,
+    WeightedJLBoostTree,
+    JLBoostTreeModel,
+    trees,
+    vcat,
+    getproperty,
+    get_leaf_nodes,
+    treedepth,
+    keeprow_vec,
+    is_left_child,
+    is_right_child
 
 include("tree-growth.jl")
 
@@ -33,7 +44,8 @@ include("g_h.jl")
 include("find_best_split.jl")
 
 include("fit_tree_stopping_criterion.jl")
-using ..TreeFitStoppingCriterion: max_depth_stopping_criterion, max_leaves_stopping_criterion
+using ..TreeFitStoppingCriterion:
+    max_depth_stopping_criterion, max_leaves_stopping_criterion
 
 
 include("fit_tree.jl")

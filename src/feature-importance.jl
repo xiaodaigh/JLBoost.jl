@@ -38,18 +38,24 @@ end
 
 dict_to_df(d) = begin
     sv = sum(values(d.freq_dict))
-    d2 = Dict(key => (val/sv) for (key, val) in d.freq_dict)
+    d2 = Dict(key => (val / sv) for (key, val) in d.freq_dict)
     dfreq = DataFrame(feature = keys(d2) |> collect, Frequency = values(d2) |> collect)
 
     sv3 = sum(values(d.gain_dict))
-    d3 = Dict(key => (val/sv3) for (key, val) in d.gain_dict)
-    dgain = DataFrame(feature = keys(d3) |> collect, Quality_Gain = values(d3) |> collect)
+    d3 = Dict(key => (val / sv3) for (key, val) in d.gain_dict)
+    dgain =
+        DataFrame(feature = keys(d3) |> collect, Quality_Gain = values(d3) |> collect)
 
     sv4 = sum(values(d.coverage_dict))
-    d4 = Dict(key => (val/sv4) for (key, val) in d.coverage_dict)
-    dcoverage = DataFrame(feature = keys(d4) |> collect, Coverage = values(d4) |> collect)
+    d4 = Dict(key => (val / sv4) for (key, val) in d.coverage_dict)
+    dcoverage =
+        DataFrame(feature = keys(d4) |> collect, Coverage = values(d4) |> collect)
 
-    sort!(join(join(dgain, dcoverage, on = :feature),  dfreq, on = :feature), [:Quality_Gain, :Coverage, :Frequency], rev = true)
+    sort!(
+        join(join(dgain, dcoverage, on = :feature), dfreq, on = :feature),
+        [:Quality_Gain, :Coverage, :Frequency],
+        rev = true,
+    )
 end
 
 feature_importance(jlt::AbstractVector{<:AbstractJLBoostTree}, df, loss, target) = begin
@@ -77,10 +83,22 @@ feature_importance(jlt::AbstractJLBoostTree, df, loss, target) = begin
 end
 
 
-feature_importance!(jlt::AbstractJLBoostTree, df, loss, target, rows_bool = fill(true, nrow(df)), freq_dict = Dict{Symbol, Int}(), gain_dict = Dict{Symbol, Float64}(), coverage_dict = Dict{Symbol, Float64}(), Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight), Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight)) = begin
+feature_importance!(
+    jlt::AbstractJLBoostTree,
+    df,
+    loss,
+    target,
+    rows_bool = fill(true, nrow(df)),
+    freq_dict = Dict{Symbol,Int}(),
+    gain_dict = Dict{Symbol,Float64}(),
+    coverage_dict = Dict{Symbol,Float64}(),
+    Gs = JLBoost.g.(loss, getproperty(Tables.columns(df), target), jlt.weight),
+    Hs = JLBoost.h.(loss, getproperty(Tables.columns(df), target), jlt.weight),
+) = begin
     if has_children(jlt)
         # compute the Quality/Gain. Coverage
-        rows_bool_left = rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
+        rows_bool_left =
+            rows_bool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
 
         rows_bool_right = rows_bool .& (.!rows_bool_left)
 
@@ -91,7 +109,10 @@ feature_importance!(jlt::AbstractJLBoostTree, df, loss, target, rows_bool = fill
 
         # note that hyper parameters are not used to compute the gain
         #gain = G_left^2/H_left + G_right^2/H_right - (G_left + G_right)^2/(H_left + H_right)
-        gain = (H_left == 0 ? 0 : G_left^2/H_left) + (H_right == 0 ? 0 : G_right^2/H_right) - (G_left + G_right)^2/(H_left + H_right)
+        gain =
+            (H_left == 0 ? 0 : G_left^2 / H_left) +
+            (H_right == 0 ? 0 : G_right^2 / H_right) -
+            (G_left + G_right)^2 / (H_left + H_right)
         coverage = H_left + H_right
 
         if haskey(freq_dict, jlt.splitfeature)
@@ -104,8 +125,30 @@ feature_importance!(jlt::AbstractJLBoostTree, df, loss, target, rows_bool = fill
             coverage_dict[jlt.splitfeature] = coverage
         end
 
-        feature_importance!(jlt.children[1], df, loss, target, rows_bool_left,  freq_dict, gain_dict, coverage_dict, Gs, Hs)
-        feature_importance!(jlt.children[2], df, loss, target, rows_bool_right, freq_dict, gain_dict, coverage_dict, Gs, Hs)
+        feature_importance!(
+            jlt.children[1],
+            df,
+            loss,
+            target,
+            rows_bool_left,
+            freq_dict,
+            gain_dict,
+            coverage_dict,
+            Gs,
+            Hs,
+        )
+        feature_importance!(
+            jlt.children[2],
+            df,
+            loss,
+            target,
+            rows_bool_right,
+            freq_dict,
+            gain_dict,
+            coverage_dict,
+            Gs,
+            Hs,
+        )
     end
 
     (freq_dict = freq_dict, gain_dict = gain_dict, coverage_dict = coverage_dict)

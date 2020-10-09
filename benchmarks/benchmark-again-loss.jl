@@ -5,16 +5,20 @@ using CuArrays
 CuArrays.allowscalar(false)
 
 prevw = rand(150000);
-target = rand([0, 1.], length(prevw));
+target = rand([0, 1.0], length(prevw));
 
-@adjoint logitbinarycrossentropy(w, t) = logitbinarycrossentropy(w, t), delta -> (delta*(1/(1+exp(-w)) - t), delta)
+@adjoint logitbinarycrossentropy(w, t) =
+    logitbinarycrossentropy(w, t), delta -> (delta * (1 / (1 + exp(-w)) - t), delta)
 
-g(prevw, target) = Zygote.gradient(prevw->logitbinarycrossentropy(prevw, target), prevw)[1]
+g(prevw, target) =
+    Zygote.gradient(prevw -> logitbinarycrossentropy(prevw, target), prevw)[1]
 g2(prevw, target) = Zygote.gradient(logitbinarycrossentropy, prevw, target)[1]
-g3(prevw, target) = ForwardDiff.gradient(x->logitbinarycrossentropy(x[1], target), [prevw])[1]
-g4(prevw, target) = ForwardDiff.derivative(prevw->logitbinarycrossentropy(prevw, target), prevw)
+g3(prevw, target) =
+    ForwardDiff.gradient(x -> logitbinarycrossentropy(x[1], target), [prevw])[1]
+g4(prevw, target) =
+    ForwardDiff.derivative(prevw -> logitbinarycrossentropy(prevw, target), prevw)
 g5(prevw, target) = Zygote.gradient(prevw) do prevw
-	Zygote.forwarddiff(prew->logitbinarycrossentropy(prew, target), prevw)
+    Zygote.forwarddiff(prew -> logitbinarycrossentropy(prew, target), prevw)
 end[1]
 g6(prevw, target) = deriv(LogitProbLoss(), target, 1 / (1 + exp(-prevw)))
 easy(prevw, target) = 1 / (1 + exp(-prevw)) - target
@@ -26,7 +30,7 @@ gtarget = gpu(target)
 g6.(gprev, gtarget)
 
 
-res = logitbinarycrossentropy.(prevw, target)  
+res = logitbinarycrossentropy.(prevw, target)
 
 value(LogitProbLoss(), target, 1 ./ (1 .+ exp.(-prevw)))
 

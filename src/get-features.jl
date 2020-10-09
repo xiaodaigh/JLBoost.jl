@@ -9,7 +9,7 @@ Return all the features used in the tree
 get_features(jlt::JLBoostTreeModel) = get_features(trees(jlt))
 
 get_features(jlt::JLBoostTree) = begin
-    d = get_features!(jlt::JLBoostTree, Dict{Symbol, Bool}())
+    d = get_features!(jlt::JLBoostTree, Dict{Symbol,Bool}())
     keys(d) |> collect |> sort
 end
 
@@ -21,7 +21,7 @@ get_features(jlt::AbstractVector{<:JLBoostTree}) = begin
     keys(d) |> collect |> sort
 end
 
-get_features!(jlt::JLBoostTree, d = Dict{Symbol, Bool}()) = begin
+get_features!(jlt::JLBoostTree, d = Dict{Symbol,Bool}()) = begin
 
     if isequal(jlt.splitfeature, missing)
         return d

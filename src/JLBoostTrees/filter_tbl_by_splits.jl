@@ -9,7 +9,7 @@ using Tables
 * tbl - A Tables.jl table
 * node - A JLBoostTree
 """
-function keeprow_vec(tbl, node::Union{Nothing, AbstractJLBoostTree})::BitArray
+function keeprow_vec(tbl, node::Union{Nothing,AbstractJLBoostTree})::BitArray
     @assert Tables.istable(tbl)
 
     tblc = Tables.columns(tbl)

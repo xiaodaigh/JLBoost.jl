@@ -1,4 +1,10 @@
-using JLBoost: _fit_tree!, LogitLogLoss, depth_wise, get_leaf_nodes, keeprow_vec, max_depth_stopping_criterion
+using JLBoost:
+    _fit_tree!,
+    LogitLogLoss,
+    depth_wise,
+    get_leaf_nodes,
+    keeprow_vec,
+    max_depth_stopping_criterion
 
 using RDatasets, DataFrames
 
@@ -26,4 +32,3 @@ stopping_criterion = max_depth_stopping_criterion(6)
 #     stopping_criterion::Function = max_depth_stopping_criterion(6);
 #     #colsample_bynode = 1, colsample_bylevel = 1,
 # 	kwargs...)
-

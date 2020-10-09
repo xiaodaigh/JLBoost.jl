@@ -3,9 +3,9 @@ using AbstractTrees: AbstractShadowTree
 abstract type AbstractJLBoostTree <: AbstractShadowTree end
 
 mutable struct JLBoostTreeModel
-	jlt::Vector
-	loss # this should be a function with deriv defined
-	target::Symbol
+    jlt::Vector
+    loss::Any # this should be a function with deriv defined
+    target::Symbol
 end
 
 """
@@ -17,34 +17,35 @@ trees(jlt::JLBoostTreeModel) = jlt.jlt
 
 
 +(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
-	v3 = deepcopy(v1)
-	v3.jlt = vcat(trees(v1), trees(v2))
-	v3
+    v3 = deepcopy(v1)
+    v3.jlt = vcat(trees(v1), trees(v2))
+    v3
 end
 
 mutable struct JLBoostTree <: AbstractJLBoostTree
-    weight
-	parent::Union{JLBoostTree, Nothing}
+    weight::Any
+    parent::Union{JLBoostTree,Nothing}
     children::Vector{AbstractJLBoostTree}
-    splitfeature
-    split
-    gain
-    JLBoostTree(w::T; parent=nothing) where {T <: Number}  = new(w, parent, JLBoostTree[], missing, missing, missing)
+    splitfeature::Any
+    split::Any
+    gain::Any
+    JLBoostTree(w::T; parent = nothing) where {T<:Number} =
+        new(w, parent, JLBoostTree[], missing, missing, missing)
 end
 
 mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
-	tree::JLBoostTree
-	eta::Number
+    tree::JLBoostTree
+    eta::Number
 end
 
 Base.getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
-	if sym == :eta
-		return getfield(jlt, :eta)
-	elseif sym == :tree
-		return getfield(jlt, :tree)
-	else
-		return getproperty(getfield(jlt, :tree), sym)
-	end
+    if sym == :eta
+        return getfield(jlt, :eta)
+    elseif sym == :tree
+        return getfield(jlt, :tree)
+    else
+        return getproperty(getfield(jlt, :tree), sym)
+    end
 end
 
 *(jlt::JLBoostTree, eta::Number) = WeightedJLBoostTree(jlt, eta)
@@ -52,13 +53,13 @@ end
 *(eta::Number, jlt::JLBoostTree) = WeightedJLBoostTree(jlt, eta)
 
 *(jlt::WeightedJLBoostTree, eta::Number) = begin
-	jlt.eta *= eta
-	jlt
+    jlt.eta *= eta
+    jlt
 end
 
 *(eta::Number, jlt::WeightedJLBoostTree) = begin
-	jlt.eta *= eta
-	jlt
+    jlt.eta *= eta
+    jlt
 end
 
 
@@ -67,16 +68,17 @@ end
 
 Show a JLBoostTree
 """
-function show(io, jlt::WeightedJLBoostTree, ntabs::I; kwargs...) where {I <: Integer}
-	println(io, "eta = $(jlt.eta) (tree weight)")
-	show(io, jlt.tree, ntabs;  kwargs...)
+function show(io, jlt::WeightedJLBoostTree, ntabs::I; kwargs...) where {I<:Integer}
+    println(io, "eta = $(jlt.eta) (tree weight)")
+    show(io, jlt.tree, ntabs; kwargs...)
 end
 
 
-function show(io, jlt::JLBoostTree, ntabs::I; splitfeature="") where {I <: Integer}
+function show(io, jlt::JLBoostTree, ntabs::I; splitfeature = "") where {I<:Integer}
     if ntabs == 0
         tabs = ""
-    else ntabs >= 1
+    else
+        ntabs >= 1
         tabs = reduce(*, ["  " for i = 1:ntabs])
     end
     if splitfeature != ""
@@ -96,8 +98,18 @@ function show(io, jlt::JLBoostTree, ntabs::I; splitfeature="") where {I <: Integ
     end
 
     if length(jlt.children) == 2
-        show(io, jlt.children[1], ntabs + 1; splitfeature = "$(jlt.splitfeature) <= $(jlt.split)")
-        show(io, jlt.children[2], ntabs + 1; splitfeature = "$(jlt.splitfeature) > $(jlt.split)")
+        show(
+            io,
+            jlt.children[1],
+            ntabs + 1;
+            splitfeature = "$(jlt.splitfeature) <= $(jlt.split)",
+        )
+        show(
+            io,
+            jlt.children[2],
+            ntabs + 1;
+            splitfeature = "$(jlt.splitfeature) > $(jlt.split)",
+        )
     end
 end
 
@@ -110,10 +122,14 @@ function show(io::IO, jlt::AbstractJLBoostTree)
     show(io, jlt, 0)
 end
 
-function show(io::IO, ::MIME"text/plain", jlt::AbstractVector{T}) where T <: AbstractJLBoostTree
-	for (i, tree) in enumerate(jlt)
-		println(io, "Tree $i")
-    	show(io, tree, 0)
-    	println(io, " ")
+function show(
+    io::IO,
+    ::MIME"text/plain",
+    jlt::AbstractVector{T},
+) where {T<:AbstractJLBoostTree}
+    for (i, tree) in enumerate(jlt)
+        println(io, "Tree $i")
+        show(io, tree, 0)
+        println(io, " ")
     end
 end

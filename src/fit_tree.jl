@@ -5,13 +5,13 @@ using ...JLBoostTrees: is_left_child
 using Tables
 
 function tree_diag_print(jlt)
-    if jlt.parent===nothing
-        parent_feature=nothing
-        parent_split=nothing
+    if jlt.parent === nothing
+        parent_feature = nothing
+        parent_split = nothing
         split_sign = ""
     else
-        parent_feature=jlt.parent.splitfeature
-        parent_split=jlt.parent.split
+        parent_feature = jlt.parent.splitfeature
+        parent_split = jlt.parent.split
         split_sign = is_left_child(jlt) ? "<=" : ">"
     end
     jlt.splitfeature, jlt.split, parent_feature, split_sign, parent_split
@@ -47,13 +47,20 @@ Parameters:
 * colsample_bylevel = 1 (NOT IMPLEMENTED YET)
     What proportion of features to sample for each level
 """
-function _fit_tree!(loss, tbl, target, features, warm_start,
+function _fit_tree!(
+    loss,
+    tbl,
+    target,
+    features,
+    warm_start,
     jlt::AbstractJLBoostTree = JLBoostTree(0.0),
     tree_growth = depth_wise,
     stopping_criterion = max_depth_stopping_criterion(6);
-    lambda = 0, gamma = 0,
+    lambda = 0,
+    gamma = 0,
     verbose = false, #colsample_bynode = 1, colsample_bylevel = 1,
-	kwargs...)
+    kwargs...,
+)
 
     @assert Tables.istable(tbl)
 
@@ -61,7 +68,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
     @assert nrow(tblc) >= 2 # seriously? you have so few records
 
-	# make absolutely sure that target is not part of features
+    # make absolutely sure that target is not part of features
     features = setdiff(features, [target])
 
     if verbose
@@ -81,7 +88,8 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
         # println.(get_leaf_nodes(jlt) .|> tree_diag_print)
 
-        leaf_nodes = filter(x->ismissing(x.splitfeature) && ismissing(x.gain), get_leaf_nodes(jlt))
+        leaf_nodes =
+            filter(x -> ismissing(x.splitfeature) && ismissing(x.gain), get_leaf_nodes(jlt))
 
         # println("the nodes considered for expansion are $(length(leaf_nodes))")
         # println.(leaf_nodes .|> tree_diag_print)
@@ -116,14 +124,30 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
             end
 
             # compute the gain for all splits for all features
-            split_with_best_gain =
-                find_best_split(loss, tblc_filtered, features[1], target, warm_start_filtered,
-                                lambda, gamma; verbose=verbose, kwargs...)
+            split_with_best_gain = find_best_split(
+                loss,
+                tblc_filtered,
+                features[1],
+                target,
+                warm_start_filtered,
+                lambda,
+                gamma;
+                verbose = verbose,
+                kwargs...,
+            )
 
             for feature in Iterators.drop(features, 1)
-                feature_split =
-                    find_best_split(loss, tblc_filtered, feature, target, warm_start_filtered,
-                                    lambda, gamma; verbose=verbose, kwargs...)
+                feature_split = find_best_split(
+                    loss,
+                    tblc_filtered,
+                    feature,
+                    target,
+                    warm_start_filtered,
+                    lambda,
+                    gamma;
+                    verbose = verbose,
+                    kwargs...,
+                )
                 if feature_split.gain > split_with_best_gain.gain
                     split_with_best_gain = feature_split
                 end
@@ -157,8 +181,10 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
             if split_with_best_gain.further_split && (split_with_best_gain.gain > 0)
                 no_more_gains_to_found = false
-                left_treenode = JLBoostTree(split_with_best_gain.lweight; parent = node_to_split)
-                right_treenode = JLBoostTree(split_with_best_gain.rweight; parent = node_to_split)
+                left_treenode =
+                    JLBoostTree(split_with_best_gain.lweight; parent = node_to_split)
+                right_treenode =
+                    JLBoostTree(split_with_best_gain.rweight; parent = node_to_split)
                 node_to_split.children = [left_treenode, right_treenode]
             end
         end
