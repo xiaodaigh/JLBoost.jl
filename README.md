@@ -13,9 +13,9 @@ This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT
 * Play nice with the Julia ecosystem e.g. Tables.jl, DataFrames.jl and CategoricalArrays.jl
 * 100%-Julia
 * Fit models on large data
-
 * Easy to manipulate the tree after fitting; play with tree pruning and adjustments
 * "Easy" to deploy
+* Completely [hackable](https://docs.google.com/presentation/d/1xjhi8AbOpBzCxoLy9kGR_NuBqo0O2EWpqQFfXCAjCGY/edit?usp=sharing)
 
 ## Quick-start
 
@@ -43,11 +43,7 @@ xgtreemodel = jlboost(iris, target)
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
-   -- PetalLength > 1.9
-     ---- weight = -2.0
-], LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
 ````
 
 
@@ -101,11 +97,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
-   -- PetalLength > 1.9
-     ---- weight = -2.0
-, eta = 1.0 (tree weight)
+   -- PetalLength > 1.9, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      -- SepalLength <= 4.8
@@ -125,6 +117,55 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
 
 
+
+
+To grow the tree a leaf-wise (AKA best-first or or in XGBoost terminology "lossguided") strategy,
+you see set the `max_leaves` parameters e.g.
+````julia
+xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
+````
+
+
+````
+JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+   -- PetalLength > 1.9, eta = 1.0 (tree weight)
+
+   -- PetalLength <= 1.9
+   -- PetalLength > 1.9
+     -- SepalLength <= 7.9
+       -- SepalLength <= 7.9
+         -- SepalLength <= 7.9
+           -- SepalLength <= 7.9
+             -- SepalLength <= 7.9
+               -- SepalLength <= 7.9
+                 ---- weight = -1.1353352832366106
+
+               -- SepalLength > 7.9
+                 ---- weight = -1.1353352832366106
+
+             -- SepalLength > 7.9
+               ---- weight = -1.1353352832366106
+
+           -- SepalLength > 7.9
+             ---- weight = -1.1353352832366106
+
+         -- SepalLength > 7.9
+           ---- weight = -1.1353352832366106
+
+       -- SepalLength > 7.9
+         ---- weight = -1.1353352832366106
+
+     -- SepalLength > 7.9
+       ---- weight = -1.1353352832366106
+], LogitLogLoss(), :is_setosa)
+````
+
+
+
+
+it recommended that you set `max_depth = 0` to avoid a warning message.
 
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
@@ -204,7 +245,7 @@ feature_importance(xgtreemodel, iris)
 
 
 ````
-1×4 DataFrames.DataFrame
+1×4 DataFrame
 │ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
 │     │ Symbol      │ Float64      │ Float64  │ Float64   │
 ├─────┼─────────────┼──────────────┼──────────┼───────────┤
@@ -253,20 +294,20 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ````
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 49.258647300784666
-     -- x <= 23.76302754656663
-       ---- weight = 23.039445731037162
+   -- x <= 51.32214061939242
+     -- x <= 25.727349410831657
+       ---- weight = 27.256447989838772
 
-     -- x > 23.76302754656663
-       ---- weight = 78.09316731600033
+     -- x > 25.727349410831657
+       ---- weight = 78.41122899944891
 
-   -- x > 49.258647300784666
-     -- x <= 75.28834840706557
-       ---- weight = 127.88683463738761
+   -- x > 51.32214061939242
+     -- x <= 76.23406281742487
+       ---- weight = 127.6822164204993
 
-     -- x > 75.28834840706557
-       ---- weight = 175.58462627687527
-], LossFunctions.LPDistLoss{2}(), :y)
+     -- x > 76.23406281742487
+       ---- weight = 179.58620985748945
+], LPDistLoss{2}(), :y)
 ````
 
 
@@ -309,10 +350,7 @@ Tree 1
 eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-     ---- weight = 2.0
-
    -- PetalLength > 1.9
-     ---- weight = -2.0
 ````
 
 
@@ -358,9 +396,11 @@ rm("iris.jdf", force=true, recursive=true)
 
 
 
-#### MLJ.jl
+### MLJ.jl
 
 Integration with MLJ.jl is available via the [JLBoostMLJ.jl](https://github.com/xiaodaigh/JLBoostMLJ.jl) package
+
+### Hackable
 
 ## Notes
 

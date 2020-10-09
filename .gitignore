@@ -9,3 +9,6 @@
 *.jlb
 *.code-workspace
 readme-env/
+jlboost-dev/Manifest.toml
+jlboost-dev/Project.toml
+jlboost-test/

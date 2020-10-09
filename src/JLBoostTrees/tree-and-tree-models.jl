@@ -1,27 +1,19 @@
-module JLBoostTrees
+using AbstractTrees: AbstractShadowTree
 
-import Base: show, *, print, println, +, getproperty
-import Base: vcat
-
-export JLBoostTree, JLBoostTreeModel, show, trees
-export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println, vcat
-export getproperty
-
-abstract type AbstractJLBoostTree end
+abstract type AbstractJLBoostTree <: AbstractShadowTree end
 
 mutable struct JLBoostTreeModel
 	jlt::Vector
-	loss
+	loss # this should be a function with deriv defined
 	target::Symbol
 end
 
 """
 	trees(jlt::JLBoostTreeModel)
 
-Return the tree
+Return the trees from a tree-model
 """
 trees(jlt::JLBoostTreeModel) = jlt.jlt
-
 
 
 +(v1::JLBoostTreeModel, v2::JLBoostTreeModel) = begin
@@ -33,11 +25,11 @@ end
 mutable struct JLBoostTree <: AbstractJLBoostTree
     weight
 	parent::Union{JLBoostTree, Nothing}
-    children::Vector
+    children::Vector{AbstractJLBoostTree}
     splitfeature
     split
-    JLBoostTree(w::T) where {T <: AbstractFloat}  = new(w, nothing, JLBoostTree[], missing, missing)
-	JLBoostTree(w::T, parent::JLBoostTree) where {T <: AbstractFloat}  = new(w, parent, JLBoostTree[], missing, missing)
+    gain
+    JLBoostTree(w::T; parent=nothing) where {T <: Number}  = new(w, parent, JLBoostTree[], missing, missing, missing)
 end
 
 mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
@@ -125,5 +117,3 @@ function show(io::IO, ::MIME"text/plain", jlt::AbstractVector{T}) where T <: Abs
     	println(io, " ")
     end
 end
-
-end # end module

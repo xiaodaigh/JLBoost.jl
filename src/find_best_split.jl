@@ -4,17 +4,17 @@ using Tables
 using CategoricalArrays
 using MappedArrays: mappedarray
 
-export best_split
+export find_best_split
 
 """
-    best_split(loss, df::DataFrameLike, feature, target, warmstart, lambda, gamma)
+    find_best_split(loss, df::DataFrameLike, feature, target, warmstart, lambda, gamma)
 
 Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
 
 Does not assume that Feature, target, and warmstart sorted and will sort them for you.
 """
 
-function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
+function find_best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
 	 @assert Tables.istable(df)
 
 	 if verbose
@@ -26,50 +26,50 @@ function best_split(loss, df, feature::Symbol, target::Symbol, warmstart::Abstra
 	 x = getproperty(dfc, feature)
 	 target_vec = getproperty(dfc, target);
 
-	 split_res = best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)
+	 split_res = find_best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)
 	 (feature = feature, split_res...)
 end
 
 
 """
-    best_split(loss, feature, target, warmstart, lambda, gamma)
+    find_best_split(loss, feature, target, warmstart, lambda, gamma)
 
 Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
 
 Does not assume that Feature, target, and warmstart sorted and will sort them for you.
 """
-function best_split(loss, feature::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
-	@assert length(feature) == length(target)
-	@assert length(feature) == length(warmstart)
+function find_best_split(loss, features::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
+	@assert length(features) == length(target)
+	@assert length(features) == length(warmstart)
 
-    if issorted(feature)
-        res = _best_split(loss, feature, target, warmstart, lambda, gamma; kwargs...)
+    if issorted(features)
+        res = _find_best_split(loss, features, target, warmstart, lambda, gamma; kwargs...)
     else
-        s = fsortperm(feature)
-        res = _best_split(loss, @view(feature[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
+        s = fsortperm(features)
+        res = _find_best_split(loss, @view(features[s]), @view(target[s]), @view(warmstart[s]), lambda, gamma; kwargs...)
     end
 end
 
 """
-	_best_split(fn, f, t, p, lambda, gamma, verbose)
+	_find_best_split(fn, f, t, p, lambda, gamma, verbose)
 
 Assume that f, t, p are iterable and that they are sorted. Intended for advanced users only
 """
-function _best_split(loss::LogitLogLoss, feature::AbstractVector, target::CategoricalVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
+function _find_best_split(loss::LogitLogLoss, feature::AbstractVector, target::CategoricalVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
 	@assert length(levels(target)) == 2
 
-	best_split(loss, feature, 2 .- target.refs, warmstart, lambda, gamma; kwargs...)
+	find_best_split(loss, feature, 2 .- target.refs, warmstart, lambda, gamma; kwargs...)
 end
 
-function _best_split(loss::LogitLogLoss, feature::AbstractVector, target::SubArray{A, B, C, D, E}, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...) where {A, B, C<:CategoricalArray, D, E}
+function _find_best_split(loss::LogitLogLoss, feature::AbstractVector, target::SubArray{A, B, C, D, E}, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...) where {A, B, C<:CategoricalArray, D, E}
 	@assert length(levels(target)) == 2
 
-	best_split(loss, feature, mappedarray(x->2 - x.level, target), warmstart, lambda, gamma; kwargs...)
+	find_best_split(loss, feature, mappedarray(x->2 - x.level, target), warmstart, lambda, gamma; kwargs...)
 end
 
 
-function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
-	@assert length(feature) >= 2
+function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamma::Number; min_child_weight = 1, verbose = false)
+    @assert length(feature) >= 2
 	@assert length(target) == length(feature)
 	@assert length(warmstart) == length(feature)
 
@@ -80,10 +80,10 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
     max_ch = ch[end]
 
     last_feature = feature[1]
-    cutpt::Int = zero(Int)
-    lweight::Float64 = 0.0
-    rweight::Float64 = 0.0
-    best_gain::Float64 = typemin(Float64)
+    cutpt = zero(Int)
+    lweight = 0.0
+    rweight = 0.0
+    best_gain = typemin(Float64)
 
 	for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
 		if f != last_feature
@@ -104,27 +104,31 @@ function _best_split(loss, feature, target, warmstart, lambda::Number, gamma::Nu
 
 	# set the split at the point at the end
     split_at = feature[end]
+    further_split = false
 
 	# the child weight is the hessian
     if cutpt >= 1
     	split_at = feature[cutpt]
 		if ch[cutpt] < min_child_weight
-			# the weight is less than child weight; do not split further
+            # the weight is less than child weight; do not split further
+            # TODO assess if this is appropriate
 			split_at = feature[end]
 			cutpt = 0
 			no_split = max_cg^2 /(max_ch + lambda)
 	    	gain = no_split - gamma
-	    	cutpt = 0
 	    	lweight = -cg[end]/(ch[end]+lambda)
-	    	rweight = -cg[end]/(ch[end]+lambda)
+            rweight = -cg[end]/(ch[end]+lambda)
+            further_split = false
+        else
+            further_split = true
 		end
     end
 
-    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight)
+    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, further_split = further_split)
 end
 
 # TODO more reseach into GPU friendliness
-# function _best_split(loss, feature, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
+# function _find_best_split(loss, feature, target::CuArray, warmstart::CuArray, lambda::Number, gamma::Number; verbose = false)
 # 	g1 = g.(loss, target, warmstart)
 # 	h1 = h.(loss, target, warmstart)
 #

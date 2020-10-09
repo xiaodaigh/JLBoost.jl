@@ -3,24 +3,32 @@ export jlboost!, jlboost
 using DataFrames: nrow, ncol
 using Tables
 
+using ..JLBoostTrees: JLBoostTree
+
 """
-	jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)), warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0, max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1, verbose = false)
+    jlboost(df, target, features = setdiff(names(df), (target, prev_w, new_weight)),
+        warm_start = fill(0.0, nrow(df)); nrounds = 1, eta = 0.3, lambda = 0, gamma = 0,
+        max_depth = 6, subsample = 1, colsample_bytree=1, colsample_bylevel=1, colsample_bynode=1,
+        verbose = false)
 
 Fit a tree boosting model with a DataFrame, df, and target symbol and allowed features.
 
-This is based on the xgboost interface, where possible the parameters have the same name as xgboost, see
-https://xgboost.readthedocs.io/en/latest/parameter.html
+This is based on the xgboost interface, where possible the parameters have the same name as xgboost,
+see https://xgboost.readthedocs.io/en/latest/parameter.html
 
 * nrounds: Number of trees to fit
-* warmstart: A vector of weight from which to start training. Defaults to 0. The warmstart may be different for every row. This is designed to allow the model to improve upon existing models.
+* warmstart: A vector of weights from which to start training. Defaults to 0. The warmstart may be
+    different for every row. This is designed to allow the model to improve upon existing models.
 * eta: The learning rate. Also known as the weight of each tree in the final summation of trees
 * lambda: XGBoost lambda hyperparameter
 * gamma: XGBoost gamma hyperparameter
 * max_depth: the maximum depth of each tree
 * subsample: 0-1, the proportion of rows to subsample for each tree build
 * verbose: Print more information
-* colsample_bytree: (0-1] The proportion of feature column to sample for each tree. This
-* min_child_weight: The weight that needs to be in each child node before a split can occur. The weight is the hessian (2nd derivative) of the loss function, which happens to be 1 for squares loss.
+* colsample_bytree: (0-1] The proportion of feature column to sample for each tree.
+* min_child_weight: The weight that needs to be in each child node before a split can occur. The
+    weight is the hessian (2nd derivative) of the loss function, which happens to be 1 for squares
+    loss.
 * colsample_bylevel: Not yet implemented
 * colsample_bynode: Not yet implemented
 * monotone_contraints: Not yet implemented
@@ -28,7 +36,8 @@ https://xgboost.readthedocs.io/en/latest/parameter.html
 """
 function jlboost(df, target::Union{Symbol, String}; kwargs...)
     target = Symbol(target)
-	jlboost(df, target, setdiff(Tables.columnnames(df), [target]), fill(0.0, nrow(df)); kwargs...)
+    warm_start = fill(0.0, nrow(df))
+	jlboost(df, target, setdiff(Tables.columnnames(df), [target]), warm_start; kwargs...)
 end
 
 function jlboost(df, target::Union{Symbol, String}, warm_start::AbstractVector{T}; kwargs...) where T <: Number
@@ -42,68 +51,89 @@ function jlboost(df, target::Union{Symbol, String}, features::AbstractVector{T};
 	jlboost(df, target, features, fill(0.0, nrow(df)); kwargs...)
 end
 
-function jlboost(df, target::Union{Symbol, String}, features::AbstractVector, warm_start::AbstractVector, loss = LogitLogLoss();
-	nrounds = 1, subsample = 1, eta = 1.0, verbose =false, colsample_bytree = 1, kwargs...)
-	# eta = 1, lambda = 0, gamma = 0, max_depth = 6,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
-	#, ,  colsample_bynode = 1,
+function jlboost(df, target::Union{Symbol, String}, features::AbstractVector,
+    warm_start::AbstractVector, loss = LogitLogLoss();
+    subsample = 1, colsample_bytree = 1, max_depth = 6, max_leaves = 0, kwargs...)
+
+    @assert 0 < subsample <= 1
+    @assert 0 < colsample_bytree <= 1
+    @assert Tables.istable(df)
+
     target = Symbol(target)
     features = Symbol.(features)
 
-	@assert nrounds >= 1
-	@assert subsample <= 1 && subsample > 0
-	@assert colsample_bytree <= 1 && colsample_bytree > 0
+    # a sample of the rows
+    row_sampling_bytree_strategy = select_row_sampling_strategy(subsample)
+
+    # a function to sample the columns
+    col_sampling_bytree_strategy = select_col_sampling_strategy(colsample_bytree)
+
+    if max_leaves > 0
+        if max_depth > 0
+            @warn "You have set max_leaves=$max_leaves but max_depth > 0. The max_depth parameter is ignored."
+        end
+        tree_growth = lossguide
+        stopping_criterion = max_leaves_stopping_criterion(max_leaves)
+    else
+        tree_growth = depth_wise
+        stopping_criterion = max_depth_stopping_criterion(max_depth)
+    end
+
+    # TODO look at target column and provide a possible selection of loss
+    # e.g. if the target is numeric then RSMELoss is more appropriate
+    jlboost(df, target, features, warm_start, loss,
+            row_sampling_bytree_strategy,
+            col_sampling_bytree_strategy,
+            tree_growth,
+            stopping_criterion; kwargs...)
+end
+
+# the most canonical version of jlboost is here
+function jlboost(df, target, features, warm_start::AbstractVector,
+    loss,
+    row_sampling_strategy::Function,
+    col_sampling_bytree_strategy::Function,
+    tree_growth::Function,
+    stopping_criterion::Function;
+	nrounds = 1, eta = 1.0, verbose = false, kwargs...)
+    # eta = 1, lambda = 0, gamma = 0,  min_child_weight = 1, colsample_bylevel = 1, colsample_bynode = 1,
+	#, ,  colsample_bynode = 1,
+
+    @assert nrounds >= 1
 	@assert Tables.istable(df)
+
+    target = Symbol(target)
+    features = Symbol.(features)
 
 	dfc = Tables.columns(df)
 
+    # res_jlt = result JLBoost trees
+	res_jlt = AbstractJLBoostTree[]
 
-	res_jlt = Vector{AbstractJLBoostTree}(undef, nrounds)
-	for i in 1:nrounds
-	 	res_jlt[i] = JLBoostTree(0.0)
-	end
-
-	if colsample_bytree < 1
-		features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-	else
-		features_sample = features
-	end
-
-	if subsample == 1
-		warm_start = fill(0.0, nrow(df))
-		new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
-	else
-		rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-		warm_start = fill(0.0, length(rows))
-		new_jlt = _fit_tree!(loss, view(dfc, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
-	end
-	res_jlt[1] = eta*deepcopy(new_jlt);
-
-	for nround in 2:nrounds
+    # fit the next round
+	for nround in 1:nrounds
 		if verbose
 			println("Fitting tree #$(nround)")
 		end
-		# assign the previous weight
 
-		if colsample_bytree < 1
-			features_sample = sample(features, ceil(length(features)*colsample_bytree) |> Int; replace = true)
-		else
-			features_sample = features
-		end
+        # sample new columns
+		features_sample = col_sampling_bytree_strategy(features, df, target, warm_start, loss;
+                                                   nrounds=nrounds, eta=eta, kwargs...)
+        # dfs = DataFrame Sampled
+        dfs = row_sampling_strategy(dfc)
+        if nround == 1
+            warm_start = fill(0.0, nrow(dfs))
+        else
+            warm_start = predict(res_jlt[1:nrounds-1], dfs)
+        end
 
-		if subsample == 1
-			warm_start = predict(res_jlt[1:nrounds-1], df)
-			new_jlt = _fit_tree!(loss, df, target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose, kwargs...);
-		else
-			rows = sample(collect(1:nrow(df)), Int(round(nrow(df)*subsample)); replace = false)
-			warm_start = predict(res_jlt[1:nrounds-1], view(dfc, rows, :))
-
-			new_jlt = _fit_tree!(loss, view(df, rows, :), target, features_sample, warm_start, nothing, JLBoostTree(0.0); verbose=verbose,kwargs...);
-		end
-	    res_jlt[nround] = eta*deepcopy(new_jlt)
+        new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0),
+                             tree_growth,
+                             stopping_criterion; verbose=verbose, kwargs...);
+        # added a new round of tree
+        push!(res_jlt, eta*deepcopy(new_jlt))
 	end
 	res_jlt
 
-	JLBoostTreeModel(res_jlt, loss, target)
+    JLBoostTreeModel(res_jlt, loss, target)
 end
-
-#_fit_tree!(loss, df, target, features, warm_start, nothing, jlt::JLBoostTree = JLBoostTree(0.0);

@@ -3,6 +3,7 @@ Pkg.activate("c:/git/JLBoost")
 @time using DataFrames
 @time using JDF
 @time using JLBoost, LossFunctions
+using JLBoost: LogitLogloss
 
 ###############################################################################
 # fitting GiveMeSomeCredit
@@ -18,7 +19,7 @@ if !isdir("c:/data/GiveMeSomeCredit/cs-training.jdf")
 end
 
 ###############################################################################
-# testing best_split
+# testing find_best_split
 ###############################################################################
 @time a = loadjdf("c:/data/GiveMeSomeCredit/cs-training.jdf")
 
