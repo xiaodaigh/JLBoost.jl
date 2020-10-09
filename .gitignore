@@ -6,6 +6,6 @@
 *.model
 *.buffer
 *.txt
-
 *.jlb
 *.code-workspace
+readme-env/
