@@ -24,7 +24,7 @@ This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT
 #### Binary Classification
 We fit the model by predicting one of the iris Species. To fit a model on a `DataFrame` you need to specify the column and the features default to all columns other than the target.
 
-````julia
+```julia
 using JLBoost, RDatasets
 iris = dataset("datasets", "iris")
 
@@ -36,15 +36,14 @@ features = setdiff(names(iris), ["Species", "is_setosa"])
 # fit one tree
 # ?jlboost for more details
 xgtreemodel = jlboost(iris, target)
-````
+```
 
-
-````
+```
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
    -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
-````
+```
 
 
 
@@ -52,48 +51,44 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
 The returned model contains a vector of trees and the loss function and target
 
-````julia
+```julia
 typeof(trees(xgtreemodel))
-````
+```
 
-
-````
+```
 Array{AbstractJLBoostTree,1}
-````
+```
 
 
 
-````julia
+```julia
 typeof(xgtreemodel.loss)
-````
+```
 
-
-````
+```
 LogitLogLoss
-````
+```
 
 
 
-````julia
+```julia
 typeof(xgtreemodel.target)
-````
+```
 
-
-````
+```
 Symbol
-````
+```
 
 
 
 
 
 You can control parameters like  `max_depth` and `nrounds`
-````julia
+```julia
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
-````
+```
 
-
-````
+```
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -106,14 +101,8 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
      -- SepalLength > 4.8
        ---- weight = 1.1353352832366155
 
-   -- PetalLength > 1.9
-     -- SepalLength <= 7.9
-       ---- weight = -1.1353352832366106
-
-     -- SepalLength > 7.9
-       ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
-````
+   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
+```
 
 
 
@@ -121,46 +110,19 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
 To grow the tree a leaf-wise (AKA best-first or or in XGBoost terminology "lossguided") strategy,
 you see set the `max_leaves` parameters e.g.
-````julia
+```julia
 xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
-````
+```
 
-
-````
+```
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
    -- PetalLength > 1.9, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9
-     -- SepalLength <= 7.9
-       -- SepalLength <= 7.9
-         -- SepalLength <= 7.9
-           -- SepalLength <= 7.9
-             -- SepalLength <= 7.9
-               -- SepalLength <= 7.9
-                 ---- weight = -1.1353352832366106
-
-               -- SepalLength > 7.9
-                 ---- weight = -1.1353352832366106
-
-             -- SepalLength > 7.9
-               ---- weight = -1.1353352832366106
-
-           -- SepalLength > 7.9
-             ---- weight = -1.1353352832366106
-
-         -- SepalLength > 7.9
-           ---- weight = -1.1353352832366106
-
-       -- SepalLength > 7.9
-         ---- weight = -1.1353352832366106
-
-     -- SepalLength > 7.9
-       ---- weight = -1.1353352832366106
-], LogitLogLoss(), :is_setosa)
-````
+   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
+```
 
 
 
@@ -169,14 +131,13 @@ it recommended that you set `max_depth = 0` to avoid a warning message.
 
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
-````julia
+```julia
 iris.pred1 = predict(xgtreemodel, iris)
 iris.pred2 = predict(xgtreemodel2, iris)
 iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
-````
+```
 
-
-````
+```
 150-element Array{Float64,1}:
   5.135335283236616
   5.135335283236616
@@ -189,41 +150,39 @@ iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
   5.135335283236613
   5.135335283236616
   ⋮
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
- -5.135335283236611
-````
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+ -5.135335283236615
+```
 
 
 
 
 
 There are also convenience functions for computing the AUC and gini
-````julia
+```julia
 AUC(-iris.pred1, iris.is_setosa)
-````
+```
 
-
-````
+```
 0.6666666666666667
-````
+```
 
 
 
-````julia
+```julia
 gini(-iris.pred1, iris.is_setosa)
-````
+```
 
-
-````
+```
 0.3333333333333335
-````
+```
 
 
 
@@ -239,18 +198,17 @@ unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 #### Feature Importances
 One can obtain the feature importance using the `feature_importance` function
 
-````julia
+```julia
 feature_importance(xgtreemodel, iris)
-````
+```
 
-
-````
+```
 1×4 DataFrame
-│ Row │ feature     │ Quality_Gain │ Coverage │ Frequency │
-│     │ Symbol      │ Float64      │ Float64  │ Float64   │
-├─────┼─────────────┼──────────────┼──────────┼───────────┤
-│ 1   │ PetalLength │ 1.0          │ 1.0      │ 1.0       │
-````
+ Row │ feature      Quality_Gain  Coverage  Frequency
+     │ Symbol       Float64       Float64?  Float64?
+─────┼────────────────────────────────────────────────
+   1 │ PetalLength           1.0       1.0        1.0
+```
 
 
 
@@ -260,20 +218,18 @@ feature_importance(xgtreemodel, iris)
 
 Any Tables.jl compatible tabular data structure. So you can use any column accessible table with JLBoost. However, you are advised to define the following methods for `df` as the generic implementation in this package may not be efficient
 
-````julia
-
+```julia
 nrow(df) # returns the number of rows
 ncol(df)
 view(df, rows, cols)
-````
-
+```
 
 
 
 #### Regression Model
 By default `JLBoost.jl` defines it's own `LogitLogLoss` type for  binary classification problems. You may replace the `loss` function-type from the `LossFunctions.jl` `SupervisedLoss` type. E.g for regression models you can choose the leaast squares loss called `L2DistLoss()`
 
-````julia
+```julia
 using DataFrames
 using JLBoost
 df = DataFrame(x = rand(100) * 100)
@@ -288,27 +244,26 @@ warm_start = fill(0.0, nrow(df))
 using LossFunctions: L2DistLoss
 loss = L2DistLoss()
 jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
-````
+```
 
-
-````
+```
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 51.32214061939242
-     -- x <= 25.727349410831657
-       ---- weight = 27.256447989838772
+   -- x <= 51.39910291332321
+     -- x <= 23.711129882632708
+       ---- weight = 26.31952279717768
 
-     -- x > 25.727349410831657
-       ---- weight = 78.41122899944891
+     -- x > 23.711129882632708
+       ---- weight = 77.24122147129853
 
-   -- x > 51.32214061939242
-     -- x <= 76.23406281742487
-       ---- weight = 127.6822164204993
+   -- x > 51.39910291332321
+     -- x <= 73.93856262454096
+       ---- weight = 127.0603063874651
 
-     -- x > 76.23406281742487
-       ---- weight = 179.58620985748945
-], LPDistLoss{2}(), :y)
-````
+     -- x > 73.93856262454096
+       ---- weight = 175.7685095772714
+], LossFunctions.LPDistLoss{2}(), :y)
+```
 
 
 
@@ -317,41 +272,29 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 ### Save & Load models
 You save the models using the `JLBoost.save` and load it with the `load` function
 
-````julia
+```julia
 JLBoost.save(xgtreemodel, "model.jlb")
-````
-
-
-````
-testing save
-````
-
-
-
-````julia
 JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
-````
+```
+
+```
+testing savetesting save
+```
 
 
-````
-testing save
-````
 
-
-
-````julia
+```julia
 JLBoost.load("model.jlb")
 JLBoost.load("model_tree.jlb")
-````
+```
 
-
-````
+```
 Tree 1
 eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
    -- PetalLength > 1.9
-````
+```
 
 
 
@@ -362,7 +305,7 @@ Sometimes, you may want to fit a model on a dataset that is too large to fit int
 
 The key advantage of fitting a model using `JDF.JDFFile` is that not all the data need to be loaded into memory. This is because `JDF` can load the columns one at a time. Hence this will enable larger models to be trained on a single computer.
 
-````julia
+```julia
 using JLBoost, RDatasets, JDF
 iris = dataset("datasets", "iris")
 
@@ -390,8 +333,7 @@ gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
 
 # clean up
 rm("iris.jdf", force=true, recursive=true)
-````
-
+```
 
 
 
