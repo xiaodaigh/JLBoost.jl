@@ -1,7 +1,7 @@
 name = "JLBoost"
 uuid = "13d6d4a1-5e7f-472c-9ebc-8123a4fbb95f"
 authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
-version = "0.1.14"
+version = "0.1.15"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
