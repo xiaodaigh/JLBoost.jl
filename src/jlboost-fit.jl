@@ -124,7 +124,7 @@ function jlboost(df, target, features, warm_start::AbstractVector,
         if nround == 1
             warm_start = fill(0.0, nrow(dfs))
         else
-            warm_start = predict(res_jlt[1:nrounds-1], dfs)
+            warm_start = predict(res_jlt[1:nround-1], dfs)
         end
 
         new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0),
