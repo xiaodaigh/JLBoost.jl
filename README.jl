@@ -24,7 +24,7 @@ typeof(xgtreemodel.target)
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
 
-xgtreemodel3 = jlboost(iris, target; nrounds = 1, max_leaves = 4, max_depth = 0)
+xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 
 
 iris.pred1 = predict(xgtreemodel, iris)

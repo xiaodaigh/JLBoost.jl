@@ -107,7 +107,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
                     leaf_node.split = typemin(Float64)
                     leaf_node.splitfeature = Symbol("too few records for split")
                     leaf_node.gain = typemin(Float64)
-                    println("this branch has too few records $(def(leaf_node))")
+                    println("this branch has too few records $(leaf_node)")
                     continue
                 else
                     # println("detective")
@@ -131,7 +131,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
             # remember the split but do not set children
             if verbose
-                println("found a best split at $(split_with_best_gain.feature) $(split_with_best_gain.split_at) $(split_with_best_gain.gain) $(split_with_best_gain.further_split) for $(def(leaf_node))")
+                println("found a best split at $(split_with_best_gain.feature) $(split_with_best_gain.split_at) $(split_with_best_gain.gain) $(split_with_best_gain.further_split) for $(leaf_node)")
             end
             best_split_dict[leaf_node] = split_with_best_gain
             # set the parent tree node
