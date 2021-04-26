@@ -2,6 +2,8 @@
 using Pkg
 cd("c:/git/JLBoost")
 Pkg.activate("c:/git/JLBoost/jlboost-test")
+Pkg.update()
+upcheck()
 
 if false
     Pkg.add("Weave")

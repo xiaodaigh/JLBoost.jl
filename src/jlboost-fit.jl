@@ -102,6 +102,8 @@ function jlboost(df, target, features, warm_start::AbstractVector,
     @assert nrounds >= 1
 	@assert Tables.istable(df)
 
+
+
     target = Symbol(target)
     features = Symbol.(features)
 
@@ -127,13 +129,19 @@ function jlboost(df, target, features, warm_start::AbstractVector,
             warm_start = predict(res_jlt[1:nround-1], dfs)
         end
 
+        println(nround)
+        println(dfc)
+
         new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0),
                              tree_growth,
                              stopping_criterion; verbose=verbose, kwargs...);
+
+        println("mehmehmehmeh")
         # added a new round of tree
         push!(res_jlt, eta*deepcopy(new_jlt))
 	end
 	res_jlt
+
 
     JLBoostTreeModel(res_jlt, loss, target)
 end

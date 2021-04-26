@@ -9,9 +9,10 @@ export find_best_split
 """
     find_best_split(loss, df::DataFrameLike, feature, target, warmstart, lambda, gamma)
 
-Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
+Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2
+Taylor-series expexpansion.
 
-Does not assume that Feature, target, and warmstart sorted and will sort them for you.
+Does not assume that Feature, target, and warmstart are sorted and will sort them for you.
 """
 
 function find_best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)

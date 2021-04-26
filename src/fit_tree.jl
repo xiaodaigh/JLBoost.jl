@@ -100,8 +100,11 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
                 warm_start_filtered = warm_start
             else
                 keeprow = keeprow_vec(tbl, leaf_node)
-                tblc_filtered = view(tblc, keeprow, :)
-                warm_start_filtered = view(warm_start, keeprow)
+                # tblc_filtered = view(tblc, keeprow, :)
+                println(typeof(keeprow))
+                tblc_filtered = tblc[keeprow, :]
+                # warm_start_filtered = view(warm_start, keeprow)
+                warm_start_filtered = warm_start[keeprow]
                 if sum(keeprow) <= 2
                     # no rows are kept, so move to next node
                     leaf_node.split = typemin(Float64)
@@ -153,6 +156,12 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
         for node_to_split in nodes_to_split
 
             # there needs to be positive gain then apply split to the tree
+            # print(best_split_dict)
+            println(best_split_dict)
+            println("node to split is next line")
+            # println(typeof(node_to_split))
+            println(node_to_split)
+            println("mehmehmeh")
             split_with_best_gain = best_split_dict[node_to_split]
 
             if split_with_best_gain.further_split && (split_with_best_gain.gain > 0)

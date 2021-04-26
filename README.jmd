@@ -1,3 +1,11 @@
+# No more development; not even bug fixes in the foreseeable future
+
+Due to life changes. I have 0 time now to handle this Open Source project. So this will be archived
+until I can come back to it.
+
+I will refocus my energy on only a couple of open source packages one of them being {disk.frame}.
+
+
 # JLBoost.jl
 
 This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT) based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decision Tree (GBDT).
@@ -67,9 +75,9 @@ it recommended that you set `max_depth = 0` to avoid a warning message.
 
 Convenience `predict` function is provided. It can be used to score a tree or a vector of trees
 ```julia
-iris.pred1 = predict(xgtreemodel, iris)
-iris.pred2 = predict(xgtreemodel2, iris)
-iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
+iris.pred1 = JLBoost.predict(xgtreemodel, iris)
+iris.pred2 = JLBoost.predict(xgtreemodel2, iris)
+iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
 ```
 
 There are also convenience functions for computing the AUC and gini
@@ -92,7 +100,7 @@ unique(predict(new_tree, iris) ./ predict(trees(xgtreemodel)[1], iris)) # 0.3
 One can obtain the feature importance using the `feature_importance` function
 
 ```julia
-feature_importance(xgtreemodel, iris)
+feature_importance(xgtreemodel2, iris)
 ```
 
 #### Tables.jl integration
