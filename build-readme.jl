@@ -1,7 +1,9 @@
 # Weave readme
 using Pkg
-# Pkg.activate("jlboost-test")
+Pkg.activate("jlboost-test")
 Pkg.update()
+
+using PkgVersionHelper: upcheck
 upcheck()
 
 if false
@@ -17,15 +19,11 @@ end
 
 using Weave
 
-weave("c:/git/JLBoost/README.jmd", out_path=:pwd, doctype="github")
-
-# Pkg.rm("Weave")
-# Pkg.rm("RDatasets")
-# Pkg.rm("JDF") # needed for table check
-#Pkg.rm("MLJ")
-#Pkg.rm("JLBoostMLJ")
+weave("README.jmd", out_path=:pwd, doctype="github")
 
 # output to README.jl for easy testing
 if false
-    tangle("c:/git/JLBoost/README.jmd")
+    tangle("README.jmd")
+    # creates a  file
+    "README.jl"
 end

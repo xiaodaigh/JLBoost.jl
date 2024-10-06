@@ -57,9 +57,9 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
     @assert Tables.istable(tbl)
 
-    tblc = Tables.columns(tbl)
+    # tblc = Tables.columns(tbl)
 
-    @assert nrow(tblc) >= 2 # seriously? you have so few records
+    @assert nrow(tbl) >= 2 # seriously? you have so few records
 
 	# make absolutely sure that target is not part of features
     features = setdiff(features, [target])
@@ -96,13 +96,13 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
         for leaf_node in leaf_nodes
             if leaf_node.parent === nothing
                 # if the node is the parent
-                tblc_filtered = tblc
+                tbl_filtered = tbl
                 warm_start_filtered = warm_start
             else
                 keeprow = keeprow_vec(tbl, leaf_node)
-                # tblc_filtered = view(tblc, keeprow, :)
-                println(typeof(keeprow))
-                tblc_filtered = tblc[keeprow, :]
+                # tbl_filtered = view(tbl, keeprow, :)
+                # println(typeof(keeprow))
+                tbl_filtered = tbl[keeprow, :]
                 # warm_start_filtered = view(warm_start, keeprow)
                 warm_start_filtered = warm_start[keeprow]
                 if sum(keeprow) <= 2
@@ -114,18 +114,18 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
                     continue
                 else
                     # println("detective")
-                    # println(extrema(tblc_filtered.SepalLength))
+                    # println(extrema(tbl_filtered.SepalLength))
                 end
             end
 
             # compute the gain for all splits for all features
             split_with_best_gain =
-                find_best_split(loss, tblc_filtered, features[1], target, warm_start_filtered,
+                find_best_split(loss, tbl_filtered, features[1], target, warm_start_filtered,
                                 lambda, gamma; verbose=verbose, kwargs...)
 
             for feature in Iterators.drop(features, 1)
                 feature_split =
-                    find_best_split(loss, tblc_filtered, feature, target, warm_start_filtered,
+                    find_best_split(loss, tbl_filtered, feature, target, warm_start_filtered,
                                     lambda, gamma; verbose=verbose, kwargs...)
                 if feature_split.gain > split_with_best_gain.gain
                     split_with_best_gain = feature_split
@@ -161,7 +161,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
             println("node to split is next line")
             # println(typeof(node_to_split))
             println(node_to_split)
-            println("mehmehmeh")
+            # println("mehmehmeh")
             split_with_best_gain = best_split_dict[node_to_split]
 
             if split_with_best_gain.further_split && (split_with_best_gain.gain > 0)
