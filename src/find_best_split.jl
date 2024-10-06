@@ -7,7 +7,7 @@ using MappedArrays: mappedarray
 export find_best_split
 
 """
-    find_best_split(loss, df::DataFrameLike, feature, target, warmstart, lambda, gamma)
+    find_best_split(loss, df::Tables.AbstractDataFrame, feature, target, warmstart, lambda, gamma)
 
 Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2
 Taylor-series expexpansion.
@@ -37,7 +37,7 @@ end
 
 Find the best (binary) split point by optimizing ∑ loss(warmstart + δx, target) using order-2 Taylor series expexpansion.
 
-Does not assume that Feature, target, and warmstart sorted and will sort them for you.
+Does not assume that Feature, target, and warmstart are sorted and will sort them for you.
 """
 function find_best_split(loss, features::AbstractVector, target::AbstractVector, warmstart::AbstractVector, lambda::Number, gamma::Number; kwargs...)
 	@assert length(features) == length(target)
@@ -74,6 +74,8 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
 	@assert length(target) == length(feature)
 	@assert length(warmstart) == length(feature)
 
+    # TODO maybe use some kind of argmax here
+    # TODO can reduce allocations here by skipping the broadcasting .
 	cg = cumsum(g.(loss, target, warmstart))
     ch = cumsum(h.(loss, target, warmstart))
 
@@ -84,6 +86,7 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
     cutpt = zero(Int)
     lweight = 0.0
     rweight = 0.0
+    #TODO using a fixed type here is strange
     best_gain = typemin(Float64)
 
 	for (i, (f, cg, ch)) in enumerate(zip(drop(feature,1) , @view(cg[1:end-1]), @view(ch[1:end-1])))
@@ -105,7 +108,7 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
 
 	# set the split at the point at the end
     split_at = feature[end]
-    further_split = false
+    should_split_further = false
 
 	# the child weight is the hessian
     if cutpt >= 1
@@ -119,13 +122,14 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
 	    	gain = no_split - gamma
 	    	lweight = -cg[end]/(ch[end]+lambda)
             rweight = -cg[end]/(ch[end]+lambda)
-            further_split = false
+            should_split_further = false
         else
-            further_split = true
+            should_split_further = true
 		end
     end
 
-    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, further_split = further_split)
+    # TODO return a type
+    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, should_split_further = should_split_further)
 end
 
 # TODO more reseach into GPU friendliness

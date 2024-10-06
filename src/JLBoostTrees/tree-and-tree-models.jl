@@ -3,7 +3,7 @@ using AbstractTrees: AbstractNode
 abstract type AbstractJLBoostTree{T} <: AbstractNode{T} end
 
 mutable struct JLBoostTreeModel
-	jlt::Vector
+	jlt::Vector{T} where {T <: AbstractJLBoostTree} # of JLBoostTree
 	loss # this should be a function with deriv defined
 	target::Symbol
 end
@@ -77,6 +77,9 @@ end
 function show(io, jlt::JLBoostTree, ntabs::I; splitfeature="") where {I <: Integer}
     if ntabs == 0
         tabs = ""
+    elseif ntabs < 0
+        @warn "ntabs < 0, setting to 0"
+        tabs = 0
     else ntabs >= 1
         tabs = reduce(*, ["  " for i = 1:ntabs])
     end

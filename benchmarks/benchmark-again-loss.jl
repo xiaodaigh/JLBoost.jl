@@ -28,7 +28,8 @@ g6.(gprev, gtarget)
 
 res = logitbinarycrossentropy.(prevw, target)
 
-value(LogitMarginLoss(), target, 1 ./ (1 .+ exp.(-prevw)))
+# TODO LossFunctions.jl not long exports value
+# value(LogitMarginLoss(), target, 1 ./ (1 .+ exp.(-prevw)))
 
 deriv(LogitMarginLoss(), target, prevw)
 
@@ -37,7 +38,8 @@ deriv2(LogitMarginLoss(), target, prevw)
 
 using LossFunctions
 
-value(LogitMarginLoss(), target, prevw)
+# TODO LossFunctions.jl not long exports value
+# value(LogitMarginLoss(), target, prevw)
 
 
 

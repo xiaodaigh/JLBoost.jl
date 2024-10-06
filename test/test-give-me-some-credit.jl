@@ -1,20 +1,19 @@
 using Pkg
-Pkg.activate("c:/git/JLBoost/jlboost-test")
-@time using JLBoost
-@time using DataFrames, JDF
-
+using DataFrames
+using JDF
+using JLBoost
+using StatsBase: mode
 
 ###############################################################################
 # fitting GiveMeSomeCredit
 ###############################################################################
 if !isdir("c:/data/GiveMeSomeCredit/cs-training.jdf")
-	using CSV
-	a = CSV.read("c:/data/GiveMeSomeCredit/cs-training.csv", missingstrings=["NA"])
-	rename!(a, Symbol("")=>:column1)
-	create_missing!(a, :MonthlyIncome)
-	create_missing!(a, :NumberOfDependents)
-	type_compress!(a, compress_float=true)
-	savejdf("c:/data/GiveMeSomeCredit/cs-training.jdf", a)
+    using CSV
+    a = CSV.read("c:/data/GiveMeSomeCredit/cs-training.csv", missingstring=["NA"], DataFrame)
+    # create_missing!(a, :MonthlyIncome)
+    # create_missing!(a, :NumberOfDependents)
+    type_compress!(a, compress_float=true)
+    savejdf("c:/data/GiveMeSomeCredit/cs-training.jdf", a)
 end
 
 ###############################################################################
@@ -22,7 +21,28 @@ end
 ###############################################################################
 @time a = loadjdf("c:/data/GiveMeSomeCredit/cs-training.jdf")
 
-# this won't work until missing won't work
-@time jlboost(a, :SeriousDlqin2yrs)
+a = DataFrame(a)
 
-@time jlboost(a, :SeriousDlqin2yrs, max_leaves = 32)
+for colname in names(a)
+    println(colname)
+
+    c = count(ismissing, a[!, colname])
+
+    c == 0 ? continue : nothing
+
+    # m = sum(a[!, colname] |> skipmissing)/c
+    m = mode(a[!, colname] |> skipmissing)
+    rows = ismissing.(a[!, colname])
+    a[rows, colname] .= m
+end
+
+
+features = setdiff(names(a), ["SeriousDlqin2yrs"])
+target = :SeriousDlqin2yrs
+verbose = false
+
+m = jlboost(a, target)
+
+m(a)
+
+predict(m, a)

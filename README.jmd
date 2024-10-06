@@ -78,6 +78,17 @@ Convenience `predict` function is provided. It can be used to score a tree or a 
 iris.pred1 = JLBoost.predict(xgtreemodel, iris);
 iris.pred2 = JLBoost.predict(xgtreemodel2, iris);
 iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
+
+first(iris.pred1_plus_2, 8)
+```
+
+Alternatively, you may use the fitted `JLBoostTreeModel` directly as a callable
+```julia
+iris.pred1 = xgtreemodel(iris);
+iris.pred2 = xgtreemodel2(iris);
+iris.pred1_plus_2 =vcat(xgtreemodel, xgtreemodel2)(iris)
+
+first(iris.pred1_plus_2, 8)
 ```
 
 There are also convenience functions for computing the AUC and gini

@@ -1,13 +1,13 @@
 export children, has_children, is_left_child, is_right_child
 
-import AbstractTrees: children, has_children
+import AbstractTrees: children
 
 function children(jlt::AbstractJLBoostTree)
     jlt.children
 end
 
 function has_children(jlt::AbstractJLBoostTree)
-    length(children(jlt)) > 0
+    length(jlt.children) > 0
 end
 
 function is_left_child(jlt::AbstractJLBoostTree)

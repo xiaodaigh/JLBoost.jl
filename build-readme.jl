@@ -1,6 +1,6 @@
 # Weave readme
 using Pkg
-Pkg.activate("jlboost-test")
+Pkg.activate("readme-env")
 Pkg.update()
 
 using PkgVersionHelper: upcheck
@@ -13,8 +13,6 @@ if false
     Pkg.add("JDF") # needed for table check
     Pkg.add("LossFunctions")
     Pkg.update()
-    #Pkg.add("MLJ")  needed for table check
-    #Pkg.add("JLBoostMLJ") # needed for table check
 end
 
 using Weave

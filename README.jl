@@ -1,4 +1,4 @@
-using Revise
+
 using JLBoost, RDatasets
 iris = dataset("datasets", "iris");
 
@@ -30,6 +30,15 @@ xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 iris.pred1 = JLBoost.predict(xgtreemodel, iris);
 iris.pred2 = JLBoost.predict(xgtreemodel2, iris);
 iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
+
+first(iris.pred1_plus_2, 8)
+
+
+iris.pred1 = xgtreemodel(iris);
+iris.pred2 = xgtreemodel2(iris);
+iris.pred1_plus_2 =([xgtreemodel, xgtreemodel2])(iris)
+
+first(iris.pred1_plus_2, 8)
 
 
 AUC(-iris.pred1, iris.is_setosa)
@@ -82,7 +91,7 @@ savejdf("iris.jdf", iris);
 irisdisk = JDFFile("iris.jdf");
 
 # fit using on disk JDF format
-xgtree1 = jlboost(irisdisk, target, features)
+xgtree1 = jlboost(irisdisk, target, features);
 xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2);
 
 # predict using on disk JDF format

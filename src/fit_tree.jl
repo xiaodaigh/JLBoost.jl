@@ -5,7 +5,7 @@ using ...JLBoostTrees: is_left_child
 using Tables
 
 function tree_diag_print(jlt)
-    if jlt.parent===nothing
+    if isnothing(jlt.parent)
         parent_feature=nothing
         parent_split=nothing
         split_sign = ""
@@ -100,22 +100,19 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
                 warm_start_filtered = warm_start
             else
                 keeprow = keeprow_vec(tbl, leaf_node)
-                # tbl_filtered = view(tbl, keeprow, :)
-                # println(typeof(keeprow))
-                tbl_filtered = tbl[keeprow, :]
-                # warm_start_filtered = view(warm_start, keeprow)
-                warm_start_filtered = warm_start[keeprow]
                 if sum(keeprow) <= 2
                     # no rows are kept, so move to next node
                     leaf_node.split = typemin(Float64)
                     leaf_node.splitfeature = Symbol("too few records for split")
                     leaf_node.gain = typemin(Float64)
-                    println("this branch has too few records $(leaf_node)")
+                    if verbose
+                        println("this branch has too few records $(leaf_node)")
+                    end
                     continue
-                else
-                    # println("detective")
-                    # println(extrema(tbl_filtered.SepalLength))
                 end
+
+                tbl_filtered = tbl[keeprow, :]
+                warm_start_filtered = warm_start[keeprow]
             end
 
             # compute the gain for all splits for all features
@@ -134,7 +131,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
             # remember the split but do not set children
             if verbose
-                println("found a best split at $(split_with_best_gain.feature) $(split_with_best_gain.split_at) $(split_with_best_gain.gain) $(split_with_best_gain.further_split) for $(leaf_node)")
+                println("found a best split at $(split_with_best_gain.feature) $(split_with_best_gain.split_at) $(split_with_best_gain.gain) $(split_with_best_gain.should_split_further) for $(leaf_node)")
             end
             best_split_dict[leaf_node] = split_with_best_gain
             # set the parent tree node
@@ -155,16 +152,18 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
         no_more_gains_to_found = true
         for node_to_split in nodes_to_split
 
-            # there needs to be positive gain then apply split to the tree
-            # print(best_split_dict)
-            println(best_split_dict)
-            println("node to split is next line")
-            # println(typeof(node_to_split))
-            println(node_to_split)
-            # println("mehmehmeh")
+            if verbose
+                # there needs to be positive gain then apply split to the tree
+                # print(best_split_dict)
+                println(best_split_dict)
+                println("node to split is next line")
+                # println(typeof(node_to_split))
+                println(node_to_split)
+            end
+
             split_with_best_gain = best_split_dict[node_to_split]
 
-            if split_with_best_gain.further_split && (split_with_best_gain.gain > 0)
+            if split_with_best_gain.should_split_further && (split_with_best_gain.gain > 0)
                 no_more_gains_to_found = false
                 left_treenode = JLBoostTree(split_with_best_gain.lweight; parent = node_to_split)
                 right_treenode = JLBoostTree(split_with_best_gain.rweight; parent = node_to_split)

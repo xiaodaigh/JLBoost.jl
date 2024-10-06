@@ -47,23 +47,6 @@ xgtreemodel = jlboost(iris, target)
 ```
 
 ```
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 133.33333333333334, lweight = 2.0, rweight = -2.0, further_split = true
-))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -114,48 +97,7 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 ```
 
 ```
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 133.33333333333334, lweight = 2.0, rweight = -2.0, further_split = true
-))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 18.04470443154842, lweight = 1.1353352832366148, rweight = -1.135335283
-236615, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 7.9, cutpt = 0, gain
- = 1.7763568394002505e-15, lweight = -1.1353352832366106, rweight = -1.1353
-352832366106, further_split = false),  => (feature = :SepalLength, split_at
- = 4.8, cutpt = 16, gain = 8.881784197001252e-16, lweight = 1.1353352832366
-135, rweight = 1.1353352832366155, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 7.9, cutpt = 0, gain
- = 1.7763568394002505e-15, lweight = -1.1353352832366106, rweight = -1.1353
-352832366106, further_split = false), 
-   -- SepalLength <= 4.8
-     ---- weight = 1.1353352832366135
-
-   -- SepalLength > 4.8
-     ---- weight = 1.1353352832366155
- => (feature = :SepalLength, split_at = 4.8, cutpt = 16, gain = 8.881784197
-001252e-16, lweight = 1.1353352832366135, rweight = 1.1353352832366155, fur
-ther_split = true))
-node to split is next line
-
+Float64
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -182,23 +124,7 @@ xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 ```
 
 ```
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 133.33333333333334, lweight = 2.0, rweight = -2.0, further_split = true
-))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 18.04470443154842, lweight = 1.1353352832366148, rweight = -1.135335283
-236615, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 7.9, cutpt = 0, gain
- = 1.7763568394002505e-15, lweight = -1.1353352832366106, rweight = -1.1353
-352832366106, further_split = false),  => (feature = :SepalLength, split_at
- = 4.8, cutpt = 16, gain = 8.881784197001252e-16, lweight = 1.1353352832366
-135, rweight = 1.1353352832366155, further_split = true))
-node to split is next line
-
+Float64
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
@@ -219,30 +145,57 @@ Convenience `predict` function is provided. It can be used to score a tree or a 
 iris.pred1 = JLBoost.predict(xgtreemodel, iris);
 iris.pred2 = JLBoost.predict(xgtreemodel2, iris);
 iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
+
+first(iris.pred1_plus_2, 8)
 ```
 
 ```
-150-element Vector{Float64}:
-  5.135335283236616
-  5.135335283236616
-  5.135335283236613
-  5.135335283236613
-  5.135335283236616
-  5.135335283236616
-  5.135335283236613
-  5.135335283236616
-  5.135335283236613
-  5.135335283236616
-  ⋮
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
- -5.135335283236615
+Float64
+Float64
+Float64
+Float64
+Float64
+Float64
+8-element Vector{Float64}:
+ 5.135335283236616
+ 5.135335283236616
+ 5.135335283236613
+ 5.135335283236613
+ 5.135335283236616
+ 5.135335283236616
+ 5.135335283236613
+ 5.135335283236616
+```
+
+
+
+
+
+Alternatively, you may use the fitted `JLBoostTreeModel` directly as a callable
+```julia
+iris.pred1 = xgtreemodel(iris);
+iris.pred2 = xgtreemodel2(iris);
+iris.pred1_plus_2 =vcat(xgtreemodel, xgtreemodel2)(iris)
+
+first(iris.pred1_plus_2, 8)
+```
+
+```
+Float64
+Float64
+Float64
+Float64
+Float64
+Float64
+8-element Vector{Float64}:
+ 5.135335283236616
+ 5.135335283236616
+ 5.135335283236613
+ 5.135335283236613
+ 5.135335283236616
+ 5.135335283236616
+ 5.135335283236613
+ 5.135335283236616
 ```
 
 
@@ -332,47 +285,22 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ```
 
 ```
-Dict{Any, Any}( => (feature = :x, split_at = 48.63911389031873, cutpt = 45,
- gain = 454424.2872906602, lweight = -51.39571079243722, rweight = -147.209
-53355374107, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :x, split_at = 74.01487196476889, cutpt = 31,
- gain = 70634.58388926741, lweight = -124.91301137485775, rweight = -176.00
-920803479855, further_split = true),  => (feature = :x, split_at = 24.96600
-5072729512, cutpt = 23, gain = 51671.5644316056, lweight = -27.961411458694
-784, rweight = -75.89520555044068, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :x, split_at = 74.01487196476889, cutpt = 31,
- gain = 70634.58388926741, lweight = -124.91301137485775, rweight = -176.00
-920803479855, further_split = true), 
-   -- x <= 24.966005072729512
-     ---- weight = -27.961411458694784
-
-   -- x > 24.966005072729512
-     ---- weight = -75.89520555044068
- => (feature = :x, split_at = 24.966005072729512, cutpt = 23, gain = 51671.
-5644316056, lweight = -27.961411458694784, rweight = -75.89520555044068, fu
-rther_split = true))
-node to split is next line
-
 JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
 
-   -- x <= 48.63911389031873
-     -- x <= 24.966005072729512
-       ---- weight = -27.961411458694784
+   -- x <= 51.07996373343428
+     -- x <= 28.631434486573802
+       ---- weight = -35.290498607914124
 
-     -- x > 24.966005072729512
-       ---- weight = -75.89520555044068
+     -- x > 28.631434486573802
+       ---- weight = -83.72801424899671
 
-   -- x > 48.63911389031873
-     -- x <= 74.01487196476889
-       ---- weight = -124.91301137485775
+   -- x > 51.07996373343428
+     -- x <= 79.50085657504499
+       ---- weight = -141.85629097965486
 
-     -- x > 74.01487196476889
-       ---- weight = -176.00920803479855
-], L2DistLoss(), :y)
+     -- x > 79.50085657504499
+       ---- weight = -181.37732912910417
+], LossFunctions.L2DistLoss(), :y)
 ```
 
 
@@ -432,64 +360,12 @@ rm("iris.jdf", force=true, recursive=true);
 ```
 
 ```
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 133.33333333333334, lweight = 2.0, rweight = -2.0, further_split = true
-))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 133.33333333333334, lweight = 2.0, rweight = -2.0, further_split = true
-))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 5.8, cutpt = 0, gain
- = 0.0, lweight = 2.0, rweight = 2.0, further_split = false),  => (feature 
-= :SepalLength, split_at = 7.9, cutpt = 0, gain = 0.0, lweight = -2.0, rwei
-ght = -2.0, further_split = false))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :PetalLength, split_at = 1.9, cutpt = 50, gai
-n = 18.04470443154842, lweight = 1.1353352832366148, rweight = -1.135335283
-236615, further_split = true))
-node to split is next line
-
-Dict{Any, Any}( => (feature = :SepalLength, split_at = 4.8, cutpt = 16, gai
-n = 8.881784197001252e-16, lweight = 1.1353352832366135, rweight = 1.135335
-2832366155, further_split = true),  => (feature = :SepalLength, split_at = 
-7.9, cutpt = 0, gain = 1.7763568394002505e-15, lweight = -1.135335283236610
-6, rweight = -1.1353352832366106, further_split = false))
-node to split is next line
-
-Dict{Any, Any}(
-   -- SepalLength <= 4.8
-     ---- weight = 1.1353352832366135
-
-   -- SepalLength > 4.8
-     ---- weight = 1.1353352832366155
- => (feature = :SepalLength, split_at = 4.8, cutpt = 16, gain = 8.881784197
-001252e-16, lweight = 1.1353352832366135, rweight = 1.1353352832366155, fur
-ther_split = true),  => (feature = :SepalLength, split_at = 7.9, cutpt = 0,
- gain = 1.7763568394002505e-15, lweight = -1.1353352832366106, rweight = -1
-.1353352832366106, further_split = false))
-node to split is next line
+Float64
+Float64
+Float64
+Float64
+Float64
+Float64
 ```
 
 
