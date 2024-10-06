@@ -47,10 +47,11 @@ xgtreemodel = jlboost(iris, target)
 ```
 
 ```
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -64,7 +65,8 @@ typeof(trees(xgtreemodel))
 ```
 
 ```
-Vector{AbstractJLBoostTree} (alias for Array{AbstractJLBoostTree, 1})
+Vector{AbstractJLBoostTree} (alias for Array{JLBoost.JLBoostTrees.AbstractJ
+LBoostTree, 1})
 ```
 
 
@@ -74,7 +76,7 @@ typeof(xgtreemodel.loss)
 ```
 
 ```
-LogitLogLoss
+JLBoost.LogitLogLoss
 ```
 
 
@@ -97,8 +99,8 @@ xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 ```
 
 ```
-Float64
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
    -- PetalLength > 1.9, eta = 1.0 (tree weight)
@@ -110,7 +112,7 @@ JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
      -- SepalLength > 4.8
        ---- weight = 1.1353352832366155
 
-   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -124,14 +126,14 @@ xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 ```
 
 ```
-Float64
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
    -- PetalLength > 1.9, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9], LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -150,12 +152,6 @@ first(iris.pred1_plus_2, 8)
 ```
 
 ```
-Float64
-Float64
-Float64
-Float64
-Float64
-Float64
 8-element Vector{Float64}:
  5.135335283236616
  5.135335283236616
@@ -181,12 +177,6 @@ first(iris.pred1_plus_2, 8)
 ```
 
 ```
-Float64
-Float64
-Float64
-Float64
-Float64
-Float64
 8-element Vector{Float64}:
  5.135335283236616
  5.135335283236616
@@ -285,21 +275,22 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 ```
 
 ```
-JLBoostTreeModel(AbstractJLBoostTree[eta = 1.0 (tree weight)
+JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
+ree[eta = 1.0 (tree weight)
 
-   -- x <= 51.07996373343428
-     -- x <= 28.631434486573802
-       ---- weight = -35.290498607914124
+   -- x <= 47.29264407613355
+     -- x <= 19.679595667337768
+       ---- weight = -19.88356114660043
 
-     -- x > 28.631434486573802
-       ---- weight = -83.72801424899671
+     -- x > 19.679595667337768
+       ---- weight = -69.80266969565675
 
-   -- x > 51.07996373343428
-     -- x <= 79.50085657504499
-       ---- weight = -141.85629097965486
+   -- x > 47.29264407613355
+     -- x <= 72.87409026345189
+       ---- weight = -125.48799157136804
 
-     -- x > 79.50085657504499
-       ---- weight = -181.37732912910417
+     -- x > 72.87409026345189
+       ---- weight = -169.38785850965385
 ], LossFunctions.L2DistLoss(), :y)
 ```
 
@@ -358,16 +349,6 @@ gini(-predict(xgtree1, irisdisk), irisdisk[:, :is_setosa]);
 # clean up
 rm("iris.jdf", force=true, recursive=true);
 ```
-
-```
-Float64
-Float64
-Float64
-Float64
-Float64
-Float64
-```
-
 
 
 

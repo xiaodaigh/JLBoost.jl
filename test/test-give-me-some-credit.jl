@@ -46,3 +46,9 @@ m = jlboost(a, target)
 m(a)
 
 predict(m, a)
+
+x = JLBoost.AUC_plot_data(-m(a), a[!, target])
+
+using Plots: plot
+
+plot(x)

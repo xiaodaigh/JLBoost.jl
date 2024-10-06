@@ -22,7 +22,7 @@ function _AUC_plot_data(score, target;  plotauc = false)
         nrow => :n
     )
     sort!(tmpdf,:score)
-    nrows = length(score)
+
     cutarget = accumulate(+, tmpdf[!,:ntarget]) ./ sum(tmpdf[!,:ntarget])
     cu = accumulate(+, tmpdf[!,:n]) ./ sum(tmpdf[!,:n])
 
