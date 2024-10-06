@@ -4,7 +4,7 @@ module JLBoost
 using SortingLab
 using StatsBase: sample
 using Base.Iterators: drop
-using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
+using LossFunctions: LogitMarginLoss, deriv, deriv2, SupervisedLoss
 #using Zygote: gradient, hessian
 #using ForwardDiff: gradient, hessian
 #using Flux: logitcrossentropy, logitbinarycrossentropy

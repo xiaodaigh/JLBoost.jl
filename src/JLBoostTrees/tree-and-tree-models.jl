@@ -1,6 +1,6 @@
-using AbstractTrees: AbstractShadowTree
+using AbstractTrees: AbstractNode
 
-abstract type AbstractJLBoostTree <: AbstractShadowTree end
+abstract type AbstractJLBoostTree{T} <: AbstractNode{T} end
 
 mutable struct JLBoostTreeModel
 	jlt::Vector
@@ -22,19 +22,20 @@ trees(jlt::JLBoostTreeModel) = jlt.jlt
 	v3
 end
 
-mutable struct JLBoostTree <: AbstractJLBoostTree
+mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T}
     weight
 	parent::Union{JLBoostTree, Nothing}
     children::Vector{AbstractJLBoostTree}
     splitfeature
     split
     gain
-    JLBoostTree(w::T; parent=nothing) where {T <: Number}  = new(w, parent, JLBoostTree[], missing, missing, missing)
+    JLBoostTree(weight; parent=nothing) = new{nothing}(weight, parent, JLBoostTree[], missing, missing, missing)
 end
 
-mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
+mutable struct WeightedJLBoostTree{T} <: AbstractJLBoostTree{T}
 	tree::JLBoostTree
 	eta::Number
+    WeightedJLBoostTree(tree, eta) = new{nothing}(tree, eta)
 end
 
 Base.getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin

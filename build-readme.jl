@@ -1,7 +1,6 @@
 # Weave readme
 using Pkg
-cd("c:/git/JLBoost")
-Pkg.activate("c:/git/JLBoost/jlboost-test")
+# Pkg.activate("jlboost-test")
 Pkg.update()
 upcheck()
 
