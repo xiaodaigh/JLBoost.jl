@@ -51,7 +51,11 @@ JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -103,7 +107,11 @@ JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9, eta = 1.0 (tree weight)
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
      -- SepalLength <= 4.8
@@ -112,7 +120,9 @@ ree[eta = 1.0 (tree weight)
      -- SepalLength > 4.8
        ---- weight = 1.1353352832366155
 
-   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
+   -- PetalLength > 1.9
+     ---- weight = -1.135335283236615
+], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -130,10 +140,18 @@ JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9, eta = 1.0 (tree weight)
+     ---- weight = 2.0
+
+   -- PetalLength > 1.9
+     ---- weight = -2.0
+, eta = 1.0 (tree weight)
 
    -- PetalLength <= 1.9
-   -- PetalLength > 1.9], JLBoost.LogitLogLoss(), :is_setosa)
+     ---- weight = 1.1353352832366148
+
+   -- PetalLength > 1.9
+     ---- weight = -1.135335283236615
+], JLBoost.LogitLogLoss(), :is_setosa)
 ```
 
 
@@ -278,19 +296,19 @@ jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth
 JLBoost.JLBoostTrees.JLBoostTreeModel(JLBoost.JLBoostTrees.AbstractJLBoostT
 ree[eta = 1.0 (tree weight)
 
-   -- x <= 47.29264407613355
-     -- x <= 19.679595667337768
-       ---- weight = -19.88356114660043
+   -- x <= 49.74195181457017
+     -- x <= 24.452118674602087
+       ---- weight = -26.049474248872063
 
-     -- x > 19.679595667337768
-       ---- weight = -69.80266969565675
+     -- x > 24.452118674602087
+       ---- weight = -74.12637404016766
 
-   -- x > 47.29264407613355
-     -- x <= 72.87409026345189
-       ---- weight = -125.48799157136804
+   -- x > 49.74195181457017
+     -- x <= 73.14222600749159
+       ---- weight = -128.516681747273
 
-     -- x > 72.87409026345189
-       ---- weight = -169.38785850965385
+     -- x > 73.14222600749159
+       ---- weight = -171.31037299027867
 ], LossFunctions.L2DistLoss(), :y)
 ```
 

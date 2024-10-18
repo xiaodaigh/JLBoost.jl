@@ -104,8 +104,6 @@ function jlboost(df, target, features, warm_start::AbstractVector,
     @assert nrounds >= 1
 	@assert Tables.istable(df)
 
-
-
     target = Symbol(target)
     features = Symbol.(features)
 

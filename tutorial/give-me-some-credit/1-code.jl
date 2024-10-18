@@ -11,6 +11,7 @@ using Chain: @chain
 data = @chain JDF.load("cs-training.jdf") begin
     DataFrame
     @select -(monthly_income, number_of_dependents)
+    @mutate revolving_utilization_of_unsecured_lines = round(revolving_utilization_of_unsecured_lines, digits=2)
 end
 
 names(data)
@@ -26,7 +27,7 @@ function fit_score_card(data, target, features)
 
     while length(features) > 0
         for feature in features
-            @info "Trying $(feature)"
+            # @info "Trying $(feature)"
             model = jlboost(data, target, [feature], warm_start; verbose=false)
             push!(feature_gini, (feature, AUC(-(model(data) + warm_start), data[!, target])))
             feature_model[feature] = model
