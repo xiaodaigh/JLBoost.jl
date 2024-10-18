@@ -86,7 +86,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
     # this shouldn't be reset and should be placed outside of the while loop below
 
 
-    while !no_more_gains_to_found && !stopping_criterion(jlt)
+    while (!no_more_gains_to_found) && !stopping_criterion(jlt)
         if verbose
             @info "BEST SPLIT PHASE: Tree Depth=$(treedepth(jlt))"
         end
@@ -153,7 +153,7 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
             end
 
             if verbose
-                @info("BEST SPLIT PHASE: found a best split at $(split_with_best_gain.feature) <= $(split_with_best_gain.split_at); gain:$(split_with_best_gain.gain) further:$(split_with_best_gain.should_split_further) for $(leaf_node)")
+                @info("BEST SPLIT PHASE: found a best split at `$(split_with_best_gain.feature)`` <= $(split_with_best_gain.split_at); gain:$(split_with_best_gain.gain) further:$(split_with_best_gain.should_split_further) for $(leaf_node)")
             end
 
             best_split_dict[leaf_node] = split_with_best_gain
@@ -169,9 +169,8 @@ function _fit_tree!(loss, tbl, target, features, warm_start,
 
         # tree_growth phase
         # select the node to grow based on growth function
-        # the tree_growth function will return the list of
-        # nodes_to_split = tree_growth(jlt)
-        nodes_to_split::Vector{<:AbstractJLBoostTree} = tree_growth(jlt)
+        # the tree_growth function needs to return the an Iterable of JLBoost trees
+        nodes_to_split = tree_growth(jlt)
         if verbose
             @info "TREE GROWTH PHASE: Found $(length(nodes_to_split)) node-candidates to split"
         end

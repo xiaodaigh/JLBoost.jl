@@ -26,6 +26,7 @@ mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T}
     weight
 	parent::Union{JLBoostTree, Nothing}
     children::AbstractVector{AbstractJLBoostTree} # this is deliberate kept as an vector of AbstractJLBoostTree; because we can genuinely mix and match types in htere
+    # TODO store the node value as FeatureSplitPredictate so you can generalise it to include missing
     splitfeature
     split
     gain

@@ -15,16 +15,16 @@ Apply the fitted model on data.
 * df - a Tables.jl compatible Table
 """
 
-(jlt::JLBoostTreeModel)(args...) = predict(jlt, args...)
+(jlt::AbstractJLBoostTree)(args...) = predict(jlt, args...)
+
+(jltm::JLBoostTreeModel)(args...) = predict(jltm, args...)
 
 (jlt::AbstractArray{JLBoostTreeModel})(args...) = predict(jlt, args...)
 
 predict(jlt::JLBoostTreeModel, df) = predict(trees(jlt), df)
 
-predict(jlt::JLBoostTreeModel, df::AbstractDataFrame) = predict(trees(jlt), df)
-
 # defaults to Float64 (double) as output
-predict(jlt::AbstractJLBoostTree, df) = predict(jlt::AbstractJLBoostTree, df, Float64)
+predict(jlt::AbstractJLBoostTree, df) = predict(jlt, df, Float64)
 
 function predict(jlt::AbstractJLBoostTree, df, out_eltype::Type{T})::Vector{T} where {T <: Number}
 	# TODO a more efficient algorithm. Currently there are too many assignbools being
@@ -43,10 +43,13 @@ end
 
 function predict!(jlt::JLBoostTree, df, res, assignbool)
 	if length(jlt.children) == 2
-	    new_assignbool = assignbool .& (getproperty(Tables.columns(df), jlt.splitfeature) .<= jlt.split)
+        tmp = getproperty(Tables.columns(df), jlt.splitfeature)
+
+        # TODO
+	    new_assignbool = assignbool .& ismissing.(tmp) .|| (tmp .<= jlt.split)
 	    predict!(jlt.children[1], df, res, new_assignbool)
 
-	    new_assignbool .= assignbool .& (getproperty(Tables.columns(df), jlt.splitfeature) .> jlt.split)
+        new_assignbool .= assignbool .& .!(ismissing.(tmp) .|| (tmp .<= jlt.split))
 	    predict!(jlt.children[2], df, res, new_assignbool)
     elseif length(jlt.children) == 0
 	    res[assignbool] .+= jlt.weight

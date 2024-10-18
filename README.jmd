@@ -1,11 +1,3 @@
-# No more development; not even bug fixes in the foreseeable future
-
-Due to life changes. I have 0 time now to handle this Open Source project. So this will be archived
-until I can come back to it.
-
-I will refocus my energy on only a couple of open source packages one of them being {disk.frame}.
-
-
 # JLBoost.jl
 
 This is a 100%-Julia implementation of Gradient Boosting Regresssion Trees (GBRT) based heavily on the algorithms published in the XGBoost, LightGBM and Catboost papers. GBRT is also referred to as Gradient Boosting Decision Tree (GBDT).

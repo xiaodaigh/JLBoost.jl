@@ -1,20 +1,69 @@
 using Revise
+using JLBoost, CSV, JDF, TidierData
+
 using JLBoost: is_left_child
 using AbstractTrees: isroot
-using JLBoost, CSV, JDF, TidierData
-using DataFrames
-
-using TidierData
+using DataFrames, TidierData
 using TidierData: @clean_names, @group_by, @summarise
 using Chain: @chain
 
 data = @chain JDF.load("cs-training.jdf") begin
+    DataFrame
+    # @select -(monthly_income, number_of_dependents)
+    @mutate revolving_utilization_of_unsecured_lines = round(revolving_utilization_of_unsecured_lines, digits=2)
+end
+
+jlboost(data, :serious_dlqin2yrs, [:monthly_income]; verbose=true, max_depth=2)
+
+jlboost(data, :serious_dlqin2yrs, [:monthly_income]; verbose=true, max_depth=2)
+
+jlboost(data, :serious_dlqin2yrs; verbose=true, max_depth=2)
+
+test = @chain JDF.load("cs-test.jdf") begin
     DataFrame
     @select -(monthly_income, number_of_dependents)
     @mutate revolving_utilization_of_unsecured_lines = round(revolving_utilization_of_unsecured_lines, digits=2)
 end
 
 names(data)
+
+idx = rand(1:5, nrow(data))
+
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=1, max_depth=4)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+data[!, :group] = idx
+
+@chain data begin
+    groupby(:group)
+    combine(_) do subdf
+        gini(-model(subdf), subdf[!, :serious_dlqin2yrs])
+    end
+end
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=2, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=3, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=4, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=5, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=6, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=7, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+model = jlboost(data, :serious_dlqin2yrs; nrounds=8, max_depth=2)
+gini(-model(data), data[!, :serious_dlqin2yrs])
+
+
 
 function fit_score_card(data, target, features)
     warm_start = fill(0.0, nrow(data))

@@ -34,8 +34,6 @@ see https://xgboost.readthedocs.io/en/latest/parameter.html
 * monotone_contraints: Not yet implemented
 * interaction_constraints: Not yet implemented
 """
-
-
 function jlboost(df, target::Union{Symbol, String}; kwargs...)
     target = Symbol(target)
     warm_start = fill(0.0, nrow(df))
@@ -107,6 +105,7 @@ function jlboost(df, target, features, warm_start::AbstractVector,
     target = Symbol(target)
     features = Symbol.(features)
 
+    # TODO get only the needed columns from the table
 	# dfc = Tables.columns(df)
     dfc = df
 
@@ -130,14 +129,10 @@ function jlboost(df, target, features, warm_start::AbstractVector,
             warm_start = predict(res_jlt[1:nround-1], dfs)
         end
 
-        # println(nround)
-        # println(dfc)
-
         new_jlt = _fit_tree!(loss, dfc, target, features_sample, warm_start, JLBoostTree(0.0),
                              tree_growth,
                              stopping_criterion; verbose=verbose, kwargs...);
 
-        # println("mehmehmehmeh")
         # added a new round of tree
         push!(res_jlt, eta*deepcopy(new_jlt))
 	end

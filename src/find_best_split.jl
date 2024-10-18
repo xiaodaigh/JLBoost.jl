@@ -18,13 +18,12 @@ Does not assume that Feature, target, and warmstart are sorted and will sort the
 function find_best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
 	 @assert Tables.istable(df)
 
-
 	 dfc = Tables.columns(df)
 
 	 x = getproperty(dfc, feature)
 
     if verbose
-        @info "find_best_split(): Calculating a split on `$feature` with extrema $(extrema(x))"
+        @info "find_best_split(): Calculating a split on `$feature` with extrema $(extrema(x |> skipmissing))"
 	end
 
 
@@ -76,6 +75,26 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
     @assert length(feature) >= 2
 	@assert length(target) == length(feature)
 	@assert length(warmstart) == length(feature)
+
+
+    # if the feature vector has missings
+    non_missing_ends = length(feature)
+    if Missing <: eltype(feature)
+        pos = searchsortedfirst(feature, missing)
+
+        if pos > non_missing_ends # this means it couldn't find any missing
+            # do nothing
+        elseif pos == 1
+            # all features are missing
+            return (split_at = missing, cutpt = missing, gain = missing, lweight = missing, rweight = missing, should_split_further = false)
+        else
+            non_missing_ends = pos - 1
+
+            feature = @view feature[1:non_missing_ends]
+            target = @view target[1:non_missing_ends]
+            warmstart = @view warmstart[1:non_missing_ends]
+        end
+    end
 
     # TODO maybe use some kind of argmax here
     # TODO can reduce allocations here by skipping the broadcasting .
@@ -131,8 +150,10 @@ function _find_best_split(loss, feature, target, warmstart, lambda::Number, gamm
 		end
     end
 
+    # TODO if should split further add missing
+    # @info "Got here: $(count(ismissing, feature))"
     # TODO return a type
-    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, should_split_further = should_split_further)
+    (split_at = split_at, cutpt = cutpt, gain = best_gain, lweight = lweight, rweight = rweight, should_split_further = should_split_further, missing_go_left = true)
 end
 
 # TODO more reseach into GPU friendliness
