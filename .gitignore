@@ -12,3 +12,5 @@ readme-env/
 jlboost-dev/Manifest.toml
 jlboost-dev/Project.toml
 jlboost-test/
+*.jdf/
+*.csv
