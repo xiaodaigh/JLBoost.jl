@@ -139,7 +139,9 @@ function jlboost(
     target = Symbol(target)
     features = Symbol.(features)
 
-    dfc = Tables.columns(df)
+    # TODO get only the needed columns from the table
+	# dfc = Tables.columns(df)
+    dfc = df
 
     # res_jlt = result JLBoost trees
     res_jlt = AbstractJLBoostTree[]
@@ -166,7 +168,7 @@ function jlboost(
         if nround == 1
             warm_start = fill(0.0, nrow(dfs))
         else
-            warm_start = predict(res_jlt[1:nrounds-1], dfs)
+            warm_start = predict(res_jlt[1:nround-1], dfs)
         end
 
         new_jlt = _fit_tree!(
@@ -179,12 +181,14 @@ function jlboost(
             tree_growth,
             stopping_criterion;
             verbose = verbose,
-            kwargs...,
+            kwargs...
         )
+
         # added a new round of tree
-        push!(res_jlt, eta * deepcopy(new_jlt))
-    end
-    res_jlt
+        push!(res_jlt, eta*deepcopy(new_jlt))
+	end
+	res_jlt
+
 
     JLBoostTreeModel(res_jlt, loss, target)
 end

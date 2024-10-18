@@ -5,22 +5,31 @@ using ...JLBoostTrees: is_left_child
 using Tables
 
 function tree_diag_print(jlt)
-    if jlt.parent === nothing
-        parent_feature = nothing
-        parent_split = nothing
+    if isnothing(jlt.parent)
+        parent_feature=nothing
+        parent_split=nothing
         split_sign = ""
     else
         parent_feature = jlt.parent.splitfeature
         parent_split = jlt.parent.split
         split_sign = is_left_child(jlt) ? "<=" : ">"
     end
-    jlt.splitfeature, jlt.split, parent_feature, split_sign, parent_split
+
+    if ismissing(jlt.splitfeature)
+        "split not set yet; parent: $parent_feature$split_sign$parent_split"
+    else
+        if isnothing(parent_feature)
+            "$(jlt.splitfeature) split at $(jlt.split); this is ROOT"
+        else
+            "$(jlt.splitfeature) split at $(jlt.split); parent: $parent_feature$split_sign$parent_split"
+        end
+    end
 end
 
 """
 	_fit_tree(loss, df, target, features, warm_start, jlt, node_colsample_strategy)
 
-Fit a tree by following a algorithm
+Fit a tree by following an algorithm
 
 Parameters:
 * loss
@@ -59,27 +68,34 @@ function _fit_tree!(
     lambda = 0,
     gamma = 0,
     verbose = false, #colsample_bynode = 1, colsample_bylevel = 1,
-    kwargs...,
+    kwargs...
 )
 
     @assert Tables.istable(tbl)
 
-    tblc = Tables.columns(tbl)
+    # tblc = Tables.columns(tbl)
 
-    @assert nrow(tblc) >= 2 # seriously? you have so few records
+    @assert nrow(tbl) >= 2 # seriously? you have so few records
 
-    # make absolutely sure that target is not part of features
-    features = setdiff(features, [target])
+	# make absolutely sure that target is not part of features
+    if target in features
+        @warn "{target} is in features; removing from features"
+        features = setdiff(features, [target])
+    end
 
     if verbose
-        println("`_fit_tree!`: Current state of tree $jlt")
+        @info "`_fit_tree!`: Current state of tree $jlt"
     end
 
     no_more_gains_to_found = false
 
-    while !no_more_gains_to_found && !stopping_criterion(jlt)
+    # keep track of the best gains at each node as we do not want to store the gain in the tree
+    # this shouldn't be reset and should be placed outside of the while loop below
+
+
+    while (!no_more_gains_to_found) && !stopping_criterion(jlt)
         if verbose
-            println("Tree Depth: $(treedepth(jlt))")
+            @info "BEST SPLIT PHASE: Tree Depth=$(treedepth(jlt))"
         end
         # at the beginning there is only one leaf node which is the parent for all nodes
         # amongst the end nodes compute the best split and choose the best split based on the leaf
@@ -91,9 +107,12 @@ function _fit_tree!(
         leaf_nodes =
             filter(x -> ismissing(x.splitfeature) && ismissing(x.gain), get_leaf_nodes(jlt))
 
-        # println("the nodes considered for expansion are $(length(leaf_nodes))")
-        # println.(leaf_nodes .|> tree_diag_print)
-        # keep track of the best gains at each node as we do not want to store the gain in the tree
+        if verbose
+            @info "BEST SPLIT PHASE: $(length(leaf_nodes)) nodes are considered for expansion:"
+            for leaf_node in leaf_nodes
+                @info "BEST SPLIT PHASE: $(leaf_node |> tree_diag_print)"
+            end
+        end
 
         best_split_dict = Dict()
 
@@ -102,62 +121,67 @@ function _fit_tree!(
         # set the split point
         # leaf_node = leaf_nodes[1]
         for leaf_node in leaf_nodes
-            if leaf_node.parent === nothing
+            if verbose
+                @info "BEST SPLIT PHASE: Calculating best split for $(leaf_node |> tree_diag_print)"
+            end
+
+            if isnothing(leaf_node.parent)
                 # if the node is the parent
-                tblc_filtered = tblc
+                tbl_filtered = tbl
                 warm_start_filtered = warm_start
             else
                 keeprow = keeprow_vec(tbl, leaf_node)
-                tblc_filtered = view(tblc, keeprow, :)
-                warm_start_filtered = view(warm_start, keeprow)
                 if sum(keeprow) <= 2
                     # no rows are kept, so move to next node
                     leaf_node.split = typemin(Float64)
                     leaf_node.splitfeature = Symbol("too few records for split")
                     leaf_node.gain = typemin(Float64)
-                    println("this branch has too few records $(def(leaf_node))")
+                    if verbose
+                        @info "BEST SPLIT PHASE: this branch has too few records $(leaf_node)"
+                    end
                     continue
-                else
-                    # println("detective")
-                    # println(extrema(tblc_filtered.SepalLength))
                 end
+
+                tbl_filtered = tbl[keeprow, :]
+                warm_start_filtered = warm_start[keeprow]
             end
 
             # compute the gain for all splits for all features
             split_with_best_gain = find_best_split(
                 loss,
-                tblc_filtered,
+                tbl_filtered,
                 features[1],
                 target,
                 warm_start_filtered,
                 lambda,
                 gamma;
                 verbose = verbose,
-                kwargs...,
+                kwargs...
             )
 
             for feature in Iterators.drop(features, 1)
                 feature_split = find_best_split(
                     loss,
-                    tblc_filtered,
+                    tbl_filtered,
                     feature,
                     target,
                     warm_start_filtered,
                     lambda,
                     gamma;
                     verbose = verbose,
-                    kwargs...,
+                    kwargs...
                 )
                 if feature_split.gain > split_with_best_gain.gain
                     split_with_best_gain = feature_split
                 end
             end
 
-            # remember the split but do not set children
             if verbose
-                println("found a best split at $(split_with_best_gain.feature) $(split_with_best_gain.split_at) $(split_with_best_gain.gain) $(split_with_best_gain.further_split) for $(def(leaf_node))")
+                @info("BEST SPLIT PHASE: found a best split at `$(split_with_best_gain.feature)`` <= $(split_with_best_gain.split_at); gain:$(split_with_best_gain.gain) further:$(split_with_best_gain.should_split_further) for $(leaf_node)")
             end
+
             best_split_dict[leaf_node] = split_with_best_gain
+
             # set the parent tree node
             leaf_node.split = split_with_best_gain.split_at
             leaf_node.splitfeature = split_with_best_gain.feature
@@ -169,23 +193,40 @@ function _fit_tree!(
 
         # tree_growth phase
         # select the node to grow based on growth function
-        # the tree_growth function will return the list of
-        # nodes_to_split = tree_growth(jlt)
-        nodes_to_split::Vector{<:AbstractJLBoostTree} = tree_growth(jlt)
+        # the tree_growth function needs to return the an Iterable of JLBoost trees
+        nodes_to_split = tree_growth(jlt)
+        if verbose
+            @info "TREE GROWTH PHASE: Found $(length(nodes_to_split)) node-candidates to split"
+        end
 
         no_more_gains_to_found = true
         for node_to_split in nodes_to_split
+            if verbose
+                # there needs to be positive gain then apply split to the tree
+                # println(best_split_dict)
+                @info "TREE GROWTH PHASE: Split at: $(node_to_split |> tree_diag_print)"
+            end
 
-            # there needs to be positive gain then apply split to the tree
-            split_with_best_gain = best_split_dict[node_to_split]
+            # BUG: seems to fail if the node only contains one value
+            # @info "State of best_split_dict $best_split_dict"
 
-            if split_with_best_gain.further_split && (split_with_best_gain.gain > 0)
-                no_more_gains_to_found = false
-                left_treenode =
-                    JLBoostTree(split_with_best_gain.lweight; parent = node_to_split)
-                right_treenode =
-                    JLBoostTree(split_with_best_gain.rweight; parent = node_to_split)
-                node_to_split.children = [left_treenode, right_treenode]
+            # sometimes the nodes to split was NOT considered by the best split phase
+            if haskey(best_split_dict, node_to_split)
+                split_with_best_gain = best_split_dict[node_to_split]
+
+                if split_with_best_gain.should_split_further && (split_with_best_gain.gain > 0)
+                    no_more_gains_to_found = false
+                    left_treenode = JLBoostTree(split_with_best_gain.lweight; parent = node_to_split)
+                    right_treenode = JLBoostTree(split_with_best_gain.rweight; parent = node_to_split)
+                    node_to_split.children = [left_treenode, right_treenode]
+                else
+                    if verbose
+                        @info "TREE GROWTH PHASE: NOT split further as no more gains to be found for above: $(node_to_split |> tree_diag_print)"
+                    end
+                end
+            else
+                # This seems fine as the node and these tree growth selection don't alway align
+                #@warn "TREE GROWTH PHASE: SKIPPED SPLIT node_to_split not found in possible growth spots; potential logic/algorithm error $(node_to_split |> tree_diag_print) was not considered by the best split phase"
             end
         end
     end # end !stopping_criterion(jlt)

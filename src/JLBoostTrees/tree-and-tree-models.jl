@@ -1,11 +1,11 @@
-using AbstractTrees: AbstractShadowTree
+using AbstractTrees: AbstractNode
 
-abstract type AbstractJLBoostTree <: AbstractShadowTree end
+abstract type AbstractJLBoostTree{T} <: AbstractNode{T} end
 
 mutable struct JLBoostTreeModel
-    jlt::Vector
-    loss::Any # this should be a function with deriv defined
-    target::Symbol
+	jlt::AbstractVector{T} where {T <: AbstractJLBoostTree} # of JLBoostTree
+	loss # this should be a function with deriv defined
+	target::Symbol
 end
 
 """
@@ -22,20 +22,22 @@ trees(jlt::JLBoostTreeModel) = jlt.jlt
     v3
 end
 
-mutable struct JLBoostTree <: AbstractJLBoostTree
-    weight::Any
-    parent::Union{JLBoostTree,Nothing}
-    children::Vector{AbstractJLBoostTree}
-    splitfeature::Any
-    split::Any
-    gain::Any
-    JLBoostTree(w::T; parent = nothing) where {T<:Number} =
-        new(w, parent, JLBoostTree[], missing, missing, missing)
+mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T}
+    weight
+	parent::Union{JLBoostTree, Nothing}
+    children::AbstractVector{AbstractJLBoostTree} # this is deliberate kept as an vector of AbstractJLBoostTree; because we can genuinely mix and match types in htere
+    # TODO store the node value as FeatureSplitPredictate so you can generalise it to include missing
+    splitfeature
+    split
+    gain
+    JLBoostTree(weight; parent=nothing) = new{nothing}(weight, parent, JLBoostTree[], missing, missing, missing)
+    JLBoostTree(args...; kwargs...) = new{nothing}(args...; kwargs...)
 end
 
-mutable struct WeightedJLBoostTree <: AbstractJLBoostTree
-    tree::JLBoostTree
-    eta::Number
+mutable struct WeightedJLBoostTree{T} <: AbstractJLBoostTree{T}
+	tree::JLBoostTree
+	eta::Number
+    WeightedJLBoostTree(tree, eta) = new{nothing}(tree, eta)
 end
 
 Base.getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
@@ -77,14 +79,19 @@ end
 function show(io, jlt::JLBoostTree, ntabs::I; splitfeature = "") where {I<:Integer}
     if ntabs == 0
         tabs = ""
-    else
-        ntabs >= 1
+    elseif ntabs < 0
+        @warn "ntabs < 0, setting to 0"
+        tabs = 0
+    else ntabs >= 1
         tabs = reduce(*, ["  " for i = 1:ntabs])
     end
     if splitfeature != ""
         println(io, "")
         print(io, "$tabs -- $splitfeature")
-        if ismissing(jlt.splitfeature)
+        # TODO check if ismissing is necessary
+        #if ismissing(jlt.splitfeature)
+        # if no children then must be an end node
+        if length(jlt.children) == 0
             println(io, "")
             println(io, "  $tabs ---- weight = $(jlt.weight)")
         else

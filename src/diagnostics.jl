@@ -1,6 +1,6 @@
 export AUC, gini#, CrossEntropy
 
-using DataFrames: by, DataFrame, sort!
+using DataFrames: groupby, combine, DataFrame, sort!
 using CategoricalArrays: CategoricalVector
 
 # import MLJBase: CrossEntropy
@@ -15,11 +15,11 @@ end
 
 AUC_plot_data(score, target; kwargs...) = _AUC_plot_data(score, target; kwargs...)
 
-function _AUC_plot_data(score, target; plotauc = false)
-    tmpdf = by(
-        DataFrame(score = score, target = target),
-        :score,
-        df1 -> DataFrame(ntarget = sum(df1[!, :target]), n = size(df1)[1]),
+function _AUC_plot_data(score, target;  plotauc = false)
+    grp_df = groupby(DataFrame(score = score, target = target), :score)
+    tmpdf = combine(grp_df,
+        :target => sum => :ntarget,
+        nrow => :n
     )
     sort!(tmpdf, :score)
     nrows = length(score)

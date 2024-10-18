@@ -25,10 +25,21 @@ function keeprow_vec(tbl, node::Union{Nothing,AbstractJLBoostTree})::BitArray
         keeprow = keeprow_vec(tbl, node.parent)
     end
 
+    tmp = getproperty(tblc, node.parent.splitfeature)
     if is_left_child(node)
-        keeprow .&= getproperty(tblc, node.parent.splitfeature) .<= node.parent.split
+        # TODO fix this
+        # @warn "Currently assuming missing go left; this NEEDS to be FIXED"
+        keeprow .&= ismissing.(tmp) .|| tmp .<= node.parent.split
+        # keeprow .&= tmp .<= node.parent.split
     else
-        keeprow .&= getproperty(tblc, node.parent.splitfeature) .> node.parent.split
+        # @warn "Currently assuming missing go left; this NEEDS to be FIXED"
+        # keeprow .&= .!ismissing.(tmp) .|| tmp .> node.parent.split
+        # the above causes errors so apply De Morgan's law
+        # not(missing) | x > y = not not (not(missing) | x > y)
+        #                      = not (missing | x <= y) # by De Morgan's law
+        # keeping the above as reminder of how dumb I am. Just negate man
+        keeprow .&= .!(ismissing.(tmp) .|| tmp .<= node.parent.split)
+        # keeprow .&= tmp .> node.parent.split
     end
 
     keeprow

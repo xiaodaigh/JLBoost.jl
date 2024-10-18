@@ -20,7 +20,7 @@ g4(prevw, target) =
 g5(prevw, target) = Zygote.gradient(prevw) do prevw
     Zygote.forwarddiff(prew -> logitbinarycrossentropy(prew, target), prevw)
 end[1]
-g6(prevw, target) = deriv(LogitProbLoss(), target, 1 / (1 + exp(-prevw)))
+g6(prevw, target) = deriv(LogitMarginLoss(), target, 1 / (1 + exp(-prevw)))
 easy(prevw, target) = 1 / (1 + exp(-prevw)) - target
 
 
@@ -32,16 +32,18 @@ g6.(gprev, gtarget)
 
 res = logitbinarycrossentropy.(prevw, target)
 
-value(LogitProbLoss(), target, 1 ./ (1 .+ exp.(-prevw)))
+# TODO LossFunctions.jl not long exports value
+# value(LogitMarginLoss(), target, 1 ./ (1 .+ exp.(-prevw)))
 
-deriv(LogitProbLoss(), target, prevw)
+deriv(LogitMarginLoss(), target, prevw)
 
-deriv2(LogitProbLoss(), target, prevw)
+deriv2(LogitMarginLoss(), target, prevw)
 
 
 using LossFunctions
 
-value(LogitProbLoss(), target, prevw)
+# TODO LossFunctions.jl not long exports value
+# value(LogitMarginLoss(), target, prevw)
 
 
 

@@ -3,7 +3,7 @@ export feature_importance
 using ..JLBoostTrees: has_children
 
 
-using DataFrames: DataFrame
+using DataFrames: DataFrame, leftjoin
 
 """
     feature_importance(jlt::JLBoostTree, df, loss, target)
@@ -51,11 +51,10 @@ dict_to_df(d) = begin
     dcoverage =
         DataFrame(feature = keys(d4) |> collect, Coverage = values(d4) |> collect)
 
-    sort!(
-        join(join(dgain, dcoverage, on = :feature), dfreq, on = :feature),
-        [:Quality_Gain, :Coverage, :Frequency],
-        rev = true,
-    )
+    tmp1 = leftjoin(dgain, dcoverage, on = :feature)
+    tmp2 = leftjoin(tmp1,  dfreq, on = :feature)
+
+    sort!(tmp2, [:Quality_Gain, :Coverage, :Frequency], rev = true)
 end
 
 feature_importance(jlt::AbstractVector{<:AbstractJLBoostTree}, df, loss, target) = begin

@@ -10,6 +10,8 @@ export getproperty
 # this needs to be defined before everything else
 include("tree-and-tree-models.jl")
 
+include("abstract-tree-interface.jl")
+
 include("children.jl")
 include("filter_tbl_by_splits.jl")
 include("get_leaf_nodes.jl")

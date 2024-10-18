@@ -4,7 +4,7 @@ module JLBoost
 using SortingLab
 using StatsBase: sample
 using Base.Iterators: drop
-using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
+using LossFunctions: LogitMarginLoss, deriv, deriv2, SupervisedLoss
 #using Zygote: gradient, hessian
 #using ForwardDiff: gradient, hessian
 #using Flux: logitcrossentropy, logitbinarycrossentropy
@@ -12,7 +12,7 @@ using LossFunctions: LogitProbLoss, deriv, deriv2, SupervisedLoss
 
 export jlboost, find_best_split, _find_best_split, predict, fit_tree, logloss, jlboost!
 export JLBoostTree, show, *, print, println
-export LogitLogloss, value, deriv, deriv2, trees
+export LogitLogloss, deriv, deriv2, trees
 export JLBoostTreeModel,
     JLBoostTree, WeightedJLBoostTree, features, feature_importance, vcat
 export getproperty, AbstractJLBoostTree, predict

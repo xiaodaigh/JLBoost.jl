@@ -8,19 +8,14 @@ using JLBoost:
 
 using RDatasets, DataFrames
 
-loss = LogitLogLoss()
-
 tbl = dataset("datasets", "iris")
 
-tbl[:is_setosa] = tbl.Species .== "setosa"
+tbl[!, :is_setosa] = tbl.Species .== "setosa"
 
 target = :is_setosa
 features = setdiff(Symbol.(names(tbl)), [:is_setosa, :Species])
 
 warm_start = fill(0.0, nrow(tbl))
-lambda = 0
-gamma = 0
-verbose = false
 
 jlt = JLBoostTree(0.0)
 tree_growth = depth_wise

@@ -1,13 +1,11 @@
 
-using JLBoost
-using RDatasets, FloatingTableView
-iris = dataset("datasets", "iris")
-vscodedisplay
+using JLBoost, RDatasets
+iris = dataset("datasets", "iris");
 
-iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
-target = :is_setosa
+iris[!, :is_setosa] = iris[!, :Species] .== "setosa";
+target = :is_setosa;
 
-features = setdiff(names(iris), ["Species", "is_setosa"])
+features = setdiff(names(iris), ["Species", "is_setosa"]);
 
 # fit one tree
 # ?jlboost for more details
@@ -25,15 +23,22 @@ typeof(xgtreemodel.target)
 
 xgtreemodel2 = jlboost(iris, target; nrounds = 2, max_depth = 2)
 
-typeof(xgtreemodel2)
-
 
 xgtreemodel3 = jlboost(iris, target; nrounds = 2, max_leaves = 8, max_depth = 0)
 
 
-iris.pred1 = predict(xgtreemodel, iris)
-iris.pred2 = predict(xgtreemodel2, iris)
-iris.pred1_plus_2 = predict(vcat(xgtreemodel, xgtreemodel2), iris)
+iris.pred1 = JLBoost.predict(xgtreemodel, iris);
+iris.pred2 = JLBoost.predict(xgtreemodel2, iris);
+iris.pred1_plus_2 = JLBoost.predict(vcat(xgtreemodel, xgtreemodel2), iris)
+
+first(iris.pred1_plus_2, 8)
+
+
+iris.pred1 = xgtreemodel(iris);
+iris.pred2 = xgtreemodel2(iris);
+iris.pred1_plus_2 =vcat(xgtreemodel, xgtreemodel2)(iris)
+
+first(iris.pred1_plus_2, 8)
 
 
 AUC(-iris.pred1, iris.is_setosa)
@@ -52,52 +57,53 @@ view(df, rows, cols)
 
 using DataFrames
 using JLBoost
-df = DataFrame(x = rand(100) * 100)
+df = DataFrame(x = rand(100) * 100);
 
-df[!, :y] = 2 * df.x .+ rand(100)
+df[!, :y] = 2*df.x .+ rand(100);
 
-target = :y
-features = [:x]
-warm_start = fill(0.0, nrow(df))
-
-
-using LossFunctions: L2DistLoss
-loss = L2DistLoss()
-jlboost(df, target, features, warm_start, loss; max_depth = 2) # default max_depth = 6
+target = :y;
+features = [:x];
+warm_start = fill(0.0, nrow(df));
 
 
-JLBoost.save(xgtreemodel, "model.jlb")
-JLBoost.save(trees(xgtreemodel), "model_tree.jlb")
+using LossFunctions: L2DistLoss;
+loss = L2DistLoss();
+jlboost(df, target, features, warm_start, loss; max_depth=2) # default max_depth = 6
 
 
-JLBoost.load("model.jlb")
-JLBoost.load("model_tree.jlb")
+JLBoost.save(xgtreemodel, "model.jlb");
+JLBoost.save(trees(xgtreemodel), "model_tree.jlb");
+
+
+JLBoost.load("model.jlb");
+JLBoost.load("model_tree.jlb");
 
 
 using JLBoost, RDatasets, JDF
-iris = dataset("datasets", "iris")
+iris = dataset("datasets", "iris");
 
-iris[!, :is_setosa] = iris[!, :Species] .== "setosa"
-target = :is_setosa
+iris[!, :is_setosa] = iris[!, :Species] .== "setosa";
+target = :is_setosa;
 
-features = setdiff(names(iris), [:Species, :is_setosa])
+features = setdiff(Symbol.(names(iris)), [:Species, :is_setosa]);
 
-savejdf("iris.jdf", iris)
-irisdisk = JDFFile("iris.jdf")
+savejdf("iris.jdf", iris);
+irisdisk = JDFFile("iris.jdf");
 
 # fit using on disk JDF format
-xgtree1 = jlboost(irisdisk, target, features)
-xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2)
+xgtree1 = jlboost(irisdisk, target, features);
+xgtree2 = jlboost(iris, target, features; nrounds = 2, max_depth = 2);
 
 # predict using on disk JDF format
-iris.pred1 = predict(xgtree1, irisdisk)
-iris.pred2 = predict(xgtree2, irisdisk)
+iris.pred1 = predict(xgtree1, irisdisk);
+iris.pred2 = predict(xgtree2, irisdisk);
 
 # AUC
-AUC(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
+AUC(-predict(xgtree1, irisdisk), irisdisk[:, :is_setosa]);
 
 # gini
-gini(-predict(xgtree1, irisdisk), irisdisk[!, :is_setosa])
+gini(-predict(xgtree1, irisdisk), irisdisk[:, :is_setosa]);
 
 # clean up
-rm("iris.jdf", force = true, recursive = true)
+rm("iris.jdf", force=true, recursive=true);
+
