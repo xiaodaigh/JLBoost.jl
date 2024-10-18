@@ -3,7 +3,7 @@ using AbstractTrees: AbstractNode
 abstract type AbstractJLBoostTree{T} <: AbstractNode{T} end
 
 mutable struct JLBoostTreeModel
-	jlt::Vector{T} where {T <: AbstractJLBoostTree} # of JLBoostTree
+	jlt::AbstractVector{T} where {T <: AbstractJLBoostTree} # of JLBoostTree
 	loss # this should be a function with deriv defined
 	target::Symbol
 end
@@ -25,11 +25,12 @@ end
 mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T}
     weight
 	parent::Union{JLBoostTree, Nothing}
-    children::Vector{AbstractJLBoostTree}
+    children::AbstractVector{AbstractJLBoostTree} # this is deliberate kept as an vector of AbstractJLBoostTree; because we can genuinely mix and match types in htere
     splitfeature
     split
     gain
     JLBoostTree(weight; parent=nothing) = new{nothing}(weight, parent, JLBoostTree[], missing, missing, missing)
+    JLBoostTree(args...; kwargs...) = new{nothing}(args...; kwargs...)
 end
 
 mutable struct WeightedJLBoostTree{T} <: AbstractJLBoostTree{T}
@@ -86,7 +87,10 @@ function show(io, jlt::JLBoostTree, ntabs::I; splitfeature="") where {I <: Integ
     if splitfeature != ""
         println(io, "")
         print(io, "$tabs -- $splitfeature")
-        if ismissing(jlt.splitfeature)
+        # TODO check if ismissing is necessary
+        #if ismissing(jlt.splitfeature)
+        # if no children then must be an end node
+        if length(jlt.children) == 0
             println(io, "")
             println(io, "  $tabs ---- weight = $(jlt.weight)")
         else

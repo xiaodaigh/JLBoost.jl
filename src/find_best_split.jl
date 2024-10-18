@@ -18,13 +18,16 @@ Does not assume that Feature, target, and warmstart are sorted and will sort the
 function find_best_split(loss, df, feature::Symbol, target::Symbol, warmstart::AbstractVector, lambda, gamma; verbose = false, kwargs...)
 	 @assert Tables.istable(df)
 
-	 if verbose
-	     println("Choosing a split on ", feature)
-	 end
 
 	 dfc = Tables.columns(df)
 
 	 x = getproperty(dfc, feature)
+
+    if verbose
+        @info "find_best_split(): Calculating a split on `$feature` with extrema $(extrema(x))"
+	end
+
+
 	 target_vec = getproperty(dfc, target);
 
 	 split_res = find_best_split(loss, x, target_vec, warmstart, lambda, gamma; verbose = verbose, kwargs...)

@@ -13,7 +13,9 @@ using ..JLBoostTrees: AbstractJLBoostTree, get_leaf_nodes
 * jlt - A JLBoostTree
 """
 function depth_wise(jlt::AbstractJLBoostTree)
-    return get_leaf_nodes(jlt)
+    leaf_nodes = filter(x -> !ismissing(x.gain) && (x.gain > 0), get_leaf_nodes(jlt))
+
+    return leaf_nodes
 end
 
 function lossguide(jlt::AbstractJLBoostTree)::Vector{JLBoostTree}

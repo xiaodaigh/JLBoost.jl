@@ -8,10 +8,11 @@ jlt - The JLBoostTree
 
 """
 function get_leaf_nodes(jlt::AbstractJLBoostTree)
-    get_leaf_nodes!(AbstractJLBoostTree[], jlt)
+    T = eltype(jlt.children)
+    get_leaf_nodes!(T[], jlt)
 end
 
-function get_leaf_nodes!(leaf_nodes::Vector{AbstractJLBoostTree}, jlt::AbstractJLBoostTree)
+function get_leaf_nodes!(leaf_nodes::AbstractVector{T}, jlt::AbstractJLBoostTree) where {T <: AbstractJLBoostTree}
     if has_children(jlt)
         for child in children(jlt)
             get_leaf_nodes!(leaf_nodes, child)
