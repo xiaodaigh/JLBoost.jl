@@ -7,7 +7,8 @@ export JLBoostTree, JLBoostTreeModel, show, trees
 export WeightedJLBoostTree, *, AbstractJLBoostTree, print, println, vcat
 export getproperty
 
-# this needs to be defined before everything else
+# these two needs to be defined before everything else
+include("feature-split-predicate.jl")
 include("tree-and-tree-models.jl")
 
 include("abstract-tree-interface.jl")

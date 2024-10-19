@@ -22,22 +22,20 @@ trees(jlt::JLBoostTreeModel) = jlt.jlt
 	v3
 end
 
-mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T}
+mutable struct JLBoostTree{T} <: AbstractJLBoostTree{T} where {T <: AbstractFeatureSplitPredictate}
     weight
 	parent::Union{JLBoostTree, Nothing}
     children::AbstractVector{AbstractJLBoostTree} # this is deliberate kept as an vector of AbstractJLBoostTree; because we can genuinely mix and match types in htere
     # TODO store the node value as FeatureSplitPredictate so you can generalise it to include missing
-    splitfeature
-    split
-    gain
+    split_predicate::T
     JLBoostTree(weight; parent=nothing) = new{nothing}(weight, parent, JLBoostTree[], missing, missing, missing)
     JLBoostTree(args...; kwargs...) = new{nothing}(args...; kwargs...)
 end
 
 mutable struct WeightedJLBoostTree{T} <: AbstractJLBoostTree{T}
-	tree::JLBoostTree
+	tree::JLBoostTree{T}
 	eta::Number
-    WeightedJLBoostTree(tree, eta) = new{nothing}(tree, eta)
+    WeightedJLBoostTree(tree, eta) = new{T}(tree, eta)
 end
 
 Base.getproperty(jlt::WeightedJLBoostTree, sym::Symbol) = begin
